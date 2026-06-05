@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
+// ─── DATA ────────────────────────────────────────────────────────────────────
 const GAMES_DATA = [
   { id:1, group:"A", date:"2026-06-11", time:"21:00", home:"Mexiko", away:"Südafrika", venue:"Mexiko-Stadt" },
   { id:2, group:"A", date:"2026-06-12", time:"04:00", home:"Südkorea", away:"Tschechien", venue:"Guadalajara" },
@@ -75,43 +76,21 @@ const GAMES_DATA = [
   { id:72, group:"L", date:"2026-06-27", time:"23:00", home:"Kroatien", away:"Ghana", venue:"Philadelphia" },
 ];
 
-const ROUND_OF_32 = [
-  { id:101, round:"Sechzehntelfinale", date:"2026-06-29", time:"19:00", home:"1A", away:"3?", venue:"Boston" },
-  { id:102, round:"Sechzehntelfinale", date:"2026-06-29", time:"22:00", home:"1B", away:"3?", venue:"Vancouver" },
-  { id:103, round:"Sechzehntelfinale", date:"2026-06-30", time:"19:00", home:"2I", away:"2J", venue:"Dallas" },
-  { id:104, round:"Sechzehntelfinale", date:"2026-06-30", time:"22:30", home:"1E", away:"3?", venue:"Boston" },
-  { id:105, round:"Sechzehntelfinale", date:"2026-07-01", time:"19:00", home:"1F", away:"3?", venue:"Seattle" },
-  { id:106, round:"Sechzehntelfinale", date:"2026-07-01", time:"22:30", home:"1D", away:"3?", venue:"Los Angeles" },
-  { id:107, round:"Sechzehntelfinale", date:"2026-07-02", time:"19:00", home:"1K", away:"3?", venue:"Houston" },
-  { id:108, round:"Sechzehntelfinale", date:"2026-07-02", time:"22:00", home:"1G", away:"3?", venue:"Atlanta" },
-  { id:109, round:"Sechzehntelfinale", date:"2026-07-03", time:"19:00", home:"1C", away:"3?", venue:"Miami" },
-  { id:110, round:"Sechzehntelfinale", date:"2026-07-03", time:"22:00", home:"2K", away:"2L", venue:"Kansas City" },
-  { id:111, round:"Sechzehntelfinale", date:"2026-07-04", time:"19:00", home:"2D", away:"2E", venue:"Philadelphia" },
-  { id:112, round:"Sechzehntelfinale", date:"2026-07-04", time:"22:30", home:"1H", away:"3?", venue:"New Jersey" },
-  { id:113, round:"Sechzehntelfinale", date:"2026-07-05", time:"22:30", home:"2F", away:"2G", venue:"Toronto" },
-  { id:114, round:"Sechzehntelfinale", date:"2026-07-05", time:"19:00", home:"1L", away:"3?", venue:"Dallas" },
-  { id:115, round:"Sechzehntelfinale", date:"2026-07-06", time:"19:00", home:"2A", away:"2B", venue:"Guadalajara" },
-  { id:116, round:"Sechzehntelfinale", date:"2026-07-06", time:"22:30", home:"2C", away:"2H", venue:"Monterrey" },
-];
-
-const KNOCKOUT = [
-  { id:201, round:"Achtelfinale", date:"2026-07-09", time:"22:00", home:"S101", away:"S102", venue:"New Jersey" },
-  { id:202, round:"Achtelfinale", date:"2026-07-09", time:"19:00", home:"S103", away:"S104", venue:"Los Angeles" },
-  { id:203, round:"Achtelfinale", date:"2026-07-10", time:"19:00", home:"S105", away:"S106", venue:"Houston" },
-  { id:204, round:"Achtelfinale", date:"2026-07-10", time:"22:00", home:"S107", away:"S108", venue:"Miami" },
-  { id:205, round:"Achtelfinale", date:"2026-07-11", time:"19:00", home:"S109", away:"S110", venue:"Seattle" },
-  { id:206, round:"Achtelfinale", date:"2026-07-11", time:"22:00", home:"S111", away:"S112", venue:"Dallas" },
-  { id:207, round:"Achtelfinale", date:"2026-07-12", time:"19:00", home:"S113", away:"S114", venue:"Kansas City" },
-  { id:208, round:"Achtelfinale", date:"2026-07-12", time:"22:00", home:"S115", away:"S116", venue:"Atlanta" },
-  { id:301, round:"Viertelfinale", date:"2026-07-15", time:"22:00", home:"S201", away:"S202", venue:"New Jersey" },
-  { id:302, round:"Viertelfinale", date:"2026-07-15", time:"19:00", home:"S203", away:"S204", venue:"Los Angeles" },
-  { id:303, round:"Viertelfinale", date:"2026-07-16", time:"19:00", home:"S205", away:"S206", venue:"Dallas" },
-  { id:304, round:"Viertelfinale", date:"2026-07-16", time:"22:00", home:"S207", away:"S208", venue:"Miami" },
-  { id:401, round:"Halbfinale", date:"2026-07-19", time:"21:00", home:"S301", away:"S302", venue:"New Jersey" },
-  { id:402, round:"Halbfinale", date:"2026-07-20", time:"21:00", home:"S303", away:"S304", venue:"Dallas" },
-  { id:501, round:"Spiel um Platz 3", date:"2026-07-18", time:"21:00", home:"Verlierer HF1", away:"Verlierer HF2", venue:"Miami" },
-  { id:502, round:"Finale", date:"2026-07-19", time:"21:00", home:"Sieger HF1", away:"Sieger HF2", venue:"New York/New Jersey" },
-];
+const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+const GROUP_TEAMS = {
+  A:["Mexiko","Südkorea","Tschechien","Südafrika"],
+  B:["Kanada","Katar","Schweiz","Bosnien"],
+  C:["Brasilien","Haiti","Schottland","Marokko"],
+  D:["USA","Australien","Türkei","Paraguay"],
+  E:["Deutschland","Curaçao","Elfenbeinküste","Ecuador"],
+  F:["Niederlande","Japan","Schweden","Tunesien"],
+  G:["Belgien","Ägypten","Iran","Neuseeland"],
+  H:["Spanien","Kap Verde","Saudi-Arabien","Uruguay"],
+  I:["Frankreich","Senegal","Irak","Norwegen"],
+  J:["Argentinien","Algerien","Österreich","Jordanien"],
+  K:["Portugal","DR Kongo","Usbekistan","Kolumbien"],
+  L:["England","Kroatien","Ghana","Panama"],
+};
 
 const FLAGS = {
   "Mexiko":"🇲🇽","Südafrika":"🇿🇦","Südkorea":"🇰🇷","Tschechien":"🇨🇿","Kanada":"🇨🇦","Bosnien":"🇧🇦",
@@ -124,230 +103,480 @@ const FLAGS = {
   "Usbekistan":"🇺🇿","Kolumbien":"🇨🇴","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Kroatien":"🇭🇷","Ghana":"🇬🇭","Panama":"🇵🇦",
 };
 
-const PHASES = ["Gruppenphase","Sechzehntelfinale","Achtelfinale","Viertelfinale","Halbfinale","Finale"];
+const TABS = ["Spielplan","Gruppen","Kicktipp"];
 
-function parseDateTime(date, time) {
-  return new Date(`${date}T${time}:00`);
-}
-function canTip(date, time) {
-  const kickoff = parseDateTime(date, time);
-  return new Date() < new Date(kickoff.getTime() - 5 * 60 * 1000);
-}
-function isStarted(date, time) {
-  return new Date() >= parseDateTime(date, time);
-}
-function formatDate(date) {
-  return new Date(date).toLocaleDateString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit" });
-}
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const dt = (date, time) => new Date(`${date}T${time.length===5?time+":00":time}`);
+const canTip = (date, time) => new Date() < new Date(dt(date,time).getTime() - 5*60*1000);
+const isStarted = (date, time) => new Date() >= dt(date, time);
+const isFinished = (date, time) => new Date() >= new Date(dt(date,time).getTime() + 110*60*1000);
+const fmtDate = d => new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
 
-function GroupTag({ group }) {
-  return (
-    <span style={{ background:"#dbeafe", color:"#1d4ed8", fontSize:"0.65rem", padding:"1px 7px", borderRadius:99, fontWeight:700 }}>
-      Gr. {group}
-    </span>
-  );
+function calcPoints(tip, result) {
+  if (!tip || !result) return 0;
+  const tH=tip.home, tA=tip.away, rH=result.home, rA=result.away;
+  if (tH===rH && tA===rA) return 5;
+  const tDiff=tH-tA, rDiff=rH-rA;
+  const sameTend = (tDiff>0&&rDiff>0)||(tDiff<0&&rDiff<0)||(tDiff===0&&rDiff===0);
+  if (!sameTend) return 0;
+  if (tDiff===rDiff) return 3; // same goal difference, right tendency
+  return 2; // right tendency only
 }
 
+function calcGroupTable(group, results) {
+  const teams = GROUP_TEAMS[group];
+  const stats = Object.fromEntries(teams.map(t=>[t,{sp:0,g:0,u:0,v:0,tore:0,gegentore:0,punkte:0}]));
+  GAMES_DATA.filter(g=>g.group===group).forEach(g=>{
+    const r = results[g.id];
+    if (!r) return;
+    const h=r.home, a=r.away;
+    stats[g.home].sp++; stats[g.away].sp++;
+    stats[g.home].tore+=h; stats[g.home].gegentore+=a;
+    stats[g.away].tore+=a; stats[g.away].gegentore+=h;
+    if (h>a) { stats[g.home].g++; stats[g.home].punkte+=3; stats[g.away].v++; }
+    else if (h<a) { stats[g.away].g++; stats[g.away].punkte+=3; stats[g.home].v++; }
+    else { stats[g.home].u++; stats[g.away].u++; stats[g.home].punkte++; stats[g.away].punkte++; }
+  });
+  return Object.entries(stats)
+    .map(([name,s])=>({name,...s,td:s.tore-s.gegentore}))
+    .sort((a,b)=>b.punkte-a.punkte||b.td-a.td||b.tore-a.tore);
+}
+
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
 function TipModal({ game, onClose, onSave, existingTip }) {
-  const [h, setH] = useState(existingTip ? String(existingTip.home) : "");
-  const [a, setA] = useState(existingTip ? String(existingTip.away) : "");
-  const inp = { width:52, textAlign:"center", background:"#fff", border:"2px solid #3b82f6", borderRadius:8, color:"#1e3a5f", fontSize:"1.5rem", fontWeight:700, padding:"6px", outline:"none" };
+  const [h,setH]=useState(existingTip?String(existingTip.home):"");
+  const [a,setA]=useState(existingTip?String(existingTip.away):"");
+  const inp={width:52,textAlign:"center",background:"#fff",border:"2px solid #3b82f6",borderRadius:8,color:"#1e3a5f",fontSize:"1.4rem",fontWeight:700,padding:"6px",outline:"none"};
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(15,39,68,0.55)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
-      <div style={{ background:"#fff", border:"1px solid #bfdbfe", borderRadius:16, padding:"28px 32px", minWidth:300, color:"#1e3a5f", boxShadow:"0 20px 60px rgba(30,58,95,0.18)" }}>
-        <div style={{ marginBottom:8, fontSize:"0.8rem", color:"#64748b" }}>{formatDate(game.date)} · {game.time} Uhr · {game.venue}</div>
-        <div style={{ fontSize:"1.05rem", fontWeight:700, marginBottom:20, color:"#1e3a5f" }}>
-          {FLAGS[game.home]||"🏳️"} {game.home} <span style={{color:"#3b82f6",margin:"0 8px"}}>vs</span> {game.away} {FLAGS[game.away]||"🏳️"}
+    <div style={{position:"fixed",inset:0,background:"rgba(15,39,68,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:16}}>
+      <div style={{background:"#fff",border:"1px solid #bfdbfe",borderRadius:16,padding:"24px 28px",width:"100%",maxWidth:340,color:"#1e3a5f",boxShadow:"0 20px 60px rgba(30,58,95,0.18)"}}>
+        <div style={{marginBottom:6,fontSize:"0.78rem",color:"#64748b"}}>{fmtDate(game.date)} · {game.time} · {game.venue}</div>
+        <div style={{fontSize:"1rem",fontWeight:700,marginBottom:18}}>
+          {FLAGS[game.home]||"🏳️"} {game.home} <span style={{color:"#3b82f6",margin:"0 6px"}}>vs</span> {game.away} {FLAGS[game.away]||"🏳️"}
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24, justifyContent:"center" }}>
-          <input type="number" min="0" max="20" value={h} onChange={e=>setH(e.target.value)} style={inp} placeholder="–" />
-          <span style={{ color:"#94a3b8", fontWeight:800, fontSize:"1.2rem" }}>:</span>
-          <input type="number" min="0" max="20" value={a} onChange={e=>setA(e.target.value)} style={inp} placeholder="–" />
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:22,justifyContent:"center"}}>
+          <input type="number" min="0" max="20" value={h} onChange={e=>setH(e.target.value)} style={inp} placeholder="–"/>
+          <span style={{color:"#94a3b8",fontWeight:800,fontSize:"1.2rem"}}>:</span>
+          <input type="number" min="0" max="20" value={a} onChange={e=>setA(e.target.value)} style={inp} placeholder="–"/>
         </div>
-        <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-          <button onClick={onClose} style={{ background:"#f1f5f9", border:"none", color:"#64748b", padding:"8px 18px", borderRadius:8, cursor:"pointer", fontSize:"0.9rem" }}>Abbrechen</button>
-          <button onClick={()=>{ if(h!==""&&a!=="") onSave({home:parseInt(h),away:parseInt(a)}); }} style={{ background:"#2563eb", border:"none", color:"white", padding:"8px 18px", borderRadius:8, cursor:"pointer", fontWeight:700, fontSize:"0.9rem" }}>Speichern</button>
+        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+          <button onClick={onClose} style={{background:"#f1f5f9",border:"none",color:"#64748b",padding:"8px 16px",borderRadius:8,cursor:"pointer",fontSize:"0.85rem"}}>Abbrechen</button>
+          <button onClick={()=>{if(h!==""&&a!=="")onSave({home:parseInt(h),away:parseInt(a)});}} style={{background:"#2563eb",border:"none",color:"white",padding:"8px 16px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:"0.85rem"}}>Speichern</button>
         </div>
       </div>
     </div>
   );
 }
 
-function GameCard({ game, tip, onTip, result }) {
-  const tipAllowed = canTip(game.date, game.time);
+function GameCard({ game, myTip, allTips, results, onTip, currentUser }) {
+  const r = results[game.id];
+  const allowed = canTip(game.date, game.time);
   const started = isStarted(game.date, game.time);
-  const isDE = game.home === "Deutschland" || game.away === "Deutschland";
+  const finished = isFinished(game.date, game.time);
+  const isDE = game.home==="Deutschland"||game.away==="Deutschland";
+  const pts = myTip && r ? calcPoints(myTip, r) : null;
 
   return (
-    <div style={{ background:"#fff", border: isDE ? "1.5px solid #3b82f6" : "1px solid #e2e8f0", borderRadius:10, padding:"12px 16px", boxShadow:"0 1px 4px rgba(30,58,95,0.07)" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-        <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-          {game.group && <GroupTag group={game.group} />}
-          {game.round && <span style={{ background:"#dbeafe", color:"#1d4ed8", fontSize:"0.65rem", padding:"1px 7px", borderRadius:99, fontWeight:700 }}>{game.round}</span>}
-          {isDE && <span style={{ background:"#2563eb", color:"#fff", fontSize:"0.65rem", padding:"1px 7px", borderRadius:99, fontWeight:700 }}>🇩🇪 Deutschland</span>}
+    <div style={{background:"#fff",border:isDE?"1.5px solid #3b82f6":"1px solid #e2e8f0",borderRadius:10,padding:"10px 14px",boxShadow:"0 1px 4px rgba(30,58,95,0.06)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:4}}>
+        <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
+          {game.group && <span style={{background:"#dbeafe",color:"#1d4ed8",fontSize:"0.62rem",padding:"1px 6px",borderRadius:99,fontWeight:700}}>Gr. {game.group}</span>}
+          {isDE && <span style={{background:"#2563eb",color:"#fff",fontSize:"0.62rem",padding:"1px 6px",borderRadius:99,fontWeight:700}}>🇩🇪 Deutschland</span>}
         </div>
-        <span style={{ fontSize:"0.72rem", color:"#94a3b8" }}>{game.venue}</span>
+        <span style={{fontSize:"0.68rem",color:"#94a3b8"}}>{game.venue}</span>
       </div>
-
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <div style={{ flex:1, display:"flex", alignItems:"center", gap:8 }}>
-          <span style={{ fontSize:"1.3rem" }}>{FLAGS[game.home]||"🏳️"}</span>
-          <span style={{ fontWeight:600, color:"#1e3a5f", fontSize:"0.9rem" }}>{game.home}</span>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4}}>
+        <div style={{flex:1,display:"flex",alignItems:"center",gap:6,minWidth:0}}>
+          <span style={{fontSize:"1.2rem",flexShrink:0}}>{FLAGS[game.home]||"🏳️"}</span>
+          <span style={{fontWeight:600,color:"#1e3a5f",fontSize:"0.82rem",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{game.home}</span>
         </div>
-        <div style={{ textAlign:"center", minWidth:90 }}>
-          {result ? (
-            <span style={{ fontSize:"1.4rem", fontWeight:800, color:"#2563eb" }}>{result.home} : {result.away}</span>
-          ) : (
-            <span style={{ fontSize:"0.9rem", color:"#64748b", fontWeight:700 }}>{game.time}</span>
+        <div style={{textAlign:"center",minWidth:80,flexShrink:0}}>
+          {r ? <span style={{fontSize:"1.3rem",fontWeight:800,color:"#2563eb"}}>{r.home} : {r.away}</span>
+             : <span style={{fontSize:"0.85rem",color:"#64748b",fontWeight:700}}>{game.time}</span>}
+          <div style={{fontSize:"0.62rem",color:"#94a3b8",marginTop:1}}>{fmtDate(game.date)}</div>
+        </div>
+        <div style={{flex:1,display:"flex",alignItems:"center",gap:6,justifyContent:"flex-end",minWidth:0}}>
+          <span style={{fontWeight:600,color:"#1e3a5f",fontSize:"0.82rem",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textAlign:"right"}}>{game.away}</span>
+          <span style={{fontSize:"1.2rem",flexShrink:0}}>{FLAGS[game.away]||"🏳️"}</span>
+        </div>
+      </div>
+      <div style={{borderTop:"1px solid #f1f5f9",marginTop:8,paddingTop:7,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6}}>
+        <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+          {myTip && <span style={{fontSize:"0.72rem",background:"#eff6ff",color:"#2563eb",padding:"2px 8px",borderRadius:99,border:"1px solid #bfdbfe"}}>Tipp: {myTip.home}:{myTip.away}</span>}
+          {pts!==null && <span style={{fontSize:"0.72rem",background:pts>=5?"#dcfce7":pts>=3?"#fef9c3":pts>=2?"#fff7ed":"#f1f5f9",color:pts>=5?"#166534":pts>=3?"#854d0e":pts>=2?"#9a3412":"#64748b",padding:"2px 8px",borderRadius:99,fontWeight:700}}>{pts} Pkt</span>}
+          {finished && allTips && Object.entries(allTips).filter(([,t])=>t).length>0 && (
+            <span style={{fontSize:"0.65rem",color:"#94a3b8"}}>
+              {Object.entries(allTips).map(([uid,t])=>{
+                if(!t) return null;
+                const p=r?calcPoints(t,r):0;
+                return <span key={uid} style={{marginRight:6}}>{uid.split("_")[0]}: {t.home}:{t.away} ({p}P)</span>;
+              })}
+            </span>
           )}
-          <div style={{ fontSize:"0.65rem", color:"#94a3b8", marginTop:1 }}>{formatDate(game.date)}</div>
         </div>
-        <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, justifyContent:"flex-end" }}>
-          <span style={{ fontWeight:600, color:"#1e3a5f", fontSize:"0.9rem" }}>{game.away}</span>
-          <span style={{ fontSize:"1.3rem" }}>{FLAGS[game.away]||"🏳️"}</span>
-        </div>
-      </div>
-
-      <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", gap:8, marginTop:10, borderTop:"1px solid #f1f5f9", paddingTop:8 }}>
-        {tip && (
-          <span style={{ fontSize:"0.75rem", background:"#eff6ff", color:"#2563eb", padding:"2px 9px", borderRadius:99, border:"1px solid #bfdbfe" }}>
-            Tipp: {tip.home} : {tip.away}
-          </span>
-        )}
-        {tipAllowed ? (
-          <button onClick={()=>onTip(game)} style={{ background:"#2563eb", border:"none", color:"white", padding:"4px 13px", borderRadius:6, cursor:"pointer", fontSize:"0.75rem", fontWeight:700 }}>
-            {tip ? "Ändern" : "Tipp abgeben"}
-          </button>
-        ) : started ? (
-          <span style={{ fontSize:"0.7rem", color:"#94a3b8" }}>Läuft / Beendet</span>
-        ) : (
-          <span style={{ fontSize:"0.7rem", color:"#ef4444", fontWeight:600 }}>⏸ Tipp gesperrt</span>
+        {currentUser && (
+          allowed ? (
+            <button onClick={onTip} style={{background:"#2563eb",border:"none",color:"white",padding:"4px 12px",borderRadius:6,cursor:"pointer",fontSize:"0.72rem",fontWeight:700,flexShrink:0}}>
+              {myTip?"Ändern":"Tipp"}
+            </button>
+          ) : started ? (
+            <span style={{fontSize:"0.68rem",color:"#94a3b8",flexShrink:0}}>Läuft/Beendet</span>
+          ) : (
+            <span style={{fontSize:"0.68rem",color:"#ef4444",fontWeight:600,flexShrink:0}}>⏸ Gesperrt</span>
+          )
         )}
       </div>
     </div>
   );
 }
 
+function GroupTable({ group, results }) {
+  const table = calcGroupTable(group, results);
+  const th = {fontSize:"0.65rem",color:"#64748b",fontWeight:600,padding:"4px 6px",textAlign:"center"};
+  const td = {fontSize:"0.75rem",padding:"5px 6px",textAlign:"center",color:"#1e3a5f"};
+  return (
+    <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 4px rgba(30,58,95,0.05)"}}>
+      <div style={{background:"#1e3a5f",padding:"8px 12px",color:"#fff",fontSize:"0.78rem",fontWeight:700}}>Gruppe {group}</div>
+      <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead>
+            <tr style={{background:"#f8fafc"}}>
+              <th style={{...th,textAlign:"left",paddingLeft:10}}>#</th>
+              <th style={{...th,textAlign:"left"}}>Team</th>
+              <th style={th}>Sp</th><th style={th}>S</th><th style={th}>U</th><th style={th}>N</th>
+              <th style={th}>Tore</th><th style={th}>TD</th><th style={{...th,fontWeight:700,color:"#1d4ed8"}}>Pkt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {table.map((t,i)=>(
+              <tr key={t.name} style={{borderTop:"1px solid #f1f5f9",background:i<2?"#f0f9ff":"#fff"}}>
+                <td style={{...td,paddingLeft:10,color:"#94a3b8",fontWeight:600}}>{i+1}</td>
+                <td style={{...td,textAlign:"left",fontWeight:i<2?700:400}}>
+                  <span style={{marginRight:5}}>{FLAGS[t.name]||"🏳️"}</span>{t.name}
+                </td>
+                <td style={td}>{t.sp}</td><td style={td}>{t.g}</td><td style={td}>{t.u}</td><td style={td}>{t.v}</td>
+                <td style={td}>{t.tore}:{t.gegentore}</td>
+                <td style={{...td,color:t.td>0?"#16a34a":t.td<0?"#dc2626":"#64748b"}}>{t.td>0?"+":""}{t.td}</td>
+                <td style={{...td,fontWeight:700,color:"#2563eb"}}>{t.punkte}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function KicktippTable({ users, allTips, results }) {
+  const scored = users.map(u => {
+    let pts = 0, exact=0, tendency=0;
+    GAMES_DATA.forEach(g => {
+      const t = allTips[u.id]?.[g.id];
+      const r = results[g.id];
+      const p = calcPoints(t, r);
+      pts += p;
+      if (p===5) exact++;
+      else if (p>=2) tendency++;
+    });
+    return { ...u, pts, exact, tendency };
+  }).sort((a,b)=>b.pts-a.pts||b.exact-a.exact);
+
+  if (scored.length===0) return (
+    <div style={{textAlign:"center",color:"#94a3b8",padding:"32px 0",fontSize:"0.85rem"}}>
+      Noch keine Teilnehmer registriert.
+    </div>
+  );
+
+  const th={fontSize:"0.65rem",color:"#64748b",fontWeight:600,padding:"6px 8px",textAlign:"center"};
+  const td={fontSize:"0.8rem",padding:"7px 8px",textAlign:"center",color:"#1e3a5f"};
+
+  return (
+    <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 4px rgba(30,58,95,0.05)"}}>
+      <table style={{width:"100%",borderCollapse:"collapse"}}>
+        <thead>
+          <tr style={{background:"#1e3a5f"}}>
+            <th style={{...th,color:"#93c5fd",textAlign:"left",paddingLeft:12}}>#</th>
+            <th style={{...th,color:"#93c5fd",textAlign:"left"}}>Name</th>
+            <th style={{...th,color:"#93c5fd"}}>Exakt</th>
+            <th style={{...th,color:"#93c5fd"}}>Tendenz</th>
+            <th style={{...th,color:"#fff",fontWeight:700}}>Punkte</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scored.map((u,i)=>(
+            <tr key={u.id} style={{borderTop:"1px solid #f1f5f9",background:i===0?"#fefce8":i===1?"#f8fafc":i===2?"#fff7ed":"#fff"}}>
+              <td style={{...td,paddingLeft:12,fontWeight:700,color:i===0?"#d97706":i===1?"#64748b":i===2?"#b45309":"#94a3b8"}}>
+                {i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1}
+              </td>
+              <td style={{...td,textAlign:"left",fontWeight:600}}>{u.name}</td>
+              <td style={{...td,color:"#16a34a",fontWeight:600}}>{u.exact}x</td>
+              <td style={{...td,color:"#2563eb"}}>{u.tendency}x</td>
+              <td style={{...td,fontWeight:800,fontSize:"0.95rem",color:"#2563eb"}}>{u.pts}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function RegisterForm({ onRegister }) {
+  const [name,setName]=useState("");
+  const [email,setEmail]=useState("");
+  const [err,setErr]=useState("");
+  const inp={width:"100%",padding:"10px 12px",border:"1px solid #cbd5e1",borderRadius:8,fontSize:"0.9rem",color:"#1e3a5f",outline:"none",boxSizing:"border-box"};
+  const submit = () => {
+    if (!name.trim()) return setErr("Bitte Namen eingeben.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr("Bitte gültige E-Mail eingeben.");
+    onRegister(name.trim(), email.trim());
+  };
+  return (
+    <div style={{background:"#fff",border:"1px solid #bfdbfe",borderRadius:14,padding:"24px",maxWidth:380,margin:"0 auto",boxShadow:"0 4px 20px rgba(30,58,95,0.1)"}}>
+      <h3 style={{margin:"0 0 6px",color:"#1e3a5f",fontSize:"1.1rem"}}>🏆 Kicktipp beitreten</h3>
+      <p style={{margin:"0 0 18px",fontSize:"0.8rem",color:"#64748b"}}>Name und E-Mail eintragen und automatisch mitspielen.</p>
+      <div style={{marginBottom:12}}>
+        <label style={{fontSize:"0.78rem",color:"#64748b",display:"block",marginBottom:4}}>Name</label>
+        <input value={name} onChange={e=>{setName(e.target.value);setErr("");}} style={inp} placeholder="z.B. Max Mustermann"/>
+      </div>
+      <div style={{marginBottom:16}}>
+        <label style={{fontSize:"0.78rem",color:"#64748b",display:"block",marginBottom:4}}>E-Mail</label>
+        <input value={email} onChange={e=>{setEmail(e.target.value);setErr("");}} style={inp} placeholder="max@beispiel.de" type="email"/>
+      </div>
+      {err && <div style={{color:"#ef4444",fontSize:"0.78rem",marginBottom:10}}>{err}</div>}
+      <button onClick={submit} style={{background:"#2563eb",border:"none",color:"#fff",padding:"10px 20px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:"0.9rem",width:"100%"}}>
+        Registrieren & mitspielen
+      </button>
+      <p style={{margin:"10px 0 0",fontSize:"0.7rem",color:"#94a3b8",textAlign:"center"}}>Deine Daten werden nur lokal gespeichert.</p>
+    </div>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [tips, setTips] = useState({});
-  const [results, setResults] = useState({});
-  const [modalGame, setModalGame] = useState(null);
-  const [activePhase, setActivePhase] = useState("Gruppenphase");
+  const [tab, setTab] = useState("Spielplan");
   const [activeGroup, setActiveGroup] = useState("Alle");
+  const [results, setResults] = useState({});
+  const [allTips, setAllTips] = useState({}); // { userId: { gameId: {home,away} } }
+  const [users, setUsers] = useState([]); // [{id,name,email}]
+  const [currentUser, setCurrentUser] = useState(null);
+  const [modalGame, setModalGame] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [now, setNow] = useState(new Date());
+  const [lastFetch, setLastFetch] = useState(null);
 
-  useEffect(() => {
-    (async () => {
-      try { const t = await window.storage.get("wm2026_tips"); if (t) setTips(JSON.parse(t.value)); } catch {}
-      try { const r = await window.storage.get("wm2026_results"); if (r) setResults(JSON.parse(r.value)); } catch {}
+  // Load from storage
+  useEffect(()=>{
+    (async()=>{
+      try { const r=await window.storage.get("wm26_results"); if(r) setResults(JSON.parse(r.value)); } catch{}
+      try { const t=await window.storage.get("wm26_tips"); if(t) setAllTips(JSON.parse(t.value)); } catch{}
+      try { const u=await window.storage.get("wm26_users"); if(u) setUsers(JSON.parse(u.value)); } catch{}
+      try { const cu=await window.storage.get("wm26_currentUser"); if(cu) setCurrentUser(JSON.parse(cu.value)); } catch{}
     })();
-  }, []);
+  },[]);
 
-  useEffect(() => {
-    const iv = setInterval(() => setNow(new Date()), 30000);
-    return () => clearInterval(iv);
-  }, []);
+  // Auto-refresh results every 5 min if games are running
+  useEffect(()=>{
+    const iv = setInterval(()=>{
+      const running = GAMES_DATA.some(g=>isStarted(g.date,g.time)&&!isFinished(g.date,g.time));
+      if (running) fetchResults(true);
+    }, 5*60*1000);
+    return ()=>clearInterval(iv);
+  },[]);
 
-  const saveTip = async (game, tip) => {
-    const newTips = { ...tips, [game.id]: tip };
-    setTips(newTips);
-    try { await window.storage.set("wm2026_tips", JSON.stringify(newTips)); } catch {}
-    setModalGame(null);
+  const saveResults = async (r) => {
+    setResults(r);
+    try { await window.storage.set("wm26_results", JSON.stringify(r)); } catch{}
   };
 
-  const fetchResults = async () => {
-    setLoading(true);
+  const fetchResults = async (silent=false) => {
+    if (!silent) setLoading(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          model:"claude-sonnet-4-20250514", max_tokens:1000,
-          system:`Du bist ein Fußball-Assistent. Gib NUR ein JSON-Objekt zurück, keine Erklärungen, keine Markdown-Backticks. Format: {"results": [{"id": <spielID>, "home": <tore>, "away": <tore>}]}. Gib nur bereits gespielte Spiele zurück. Heute: ${now.toLocaleDateString("de-DE")}.`,
+      const started = GAMES_DATA.filter(g=>isStarted(g.date,g.time));
+      if (!started.length) { setLoading(false); return; }
+      const res = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",max_tokens:1500,
+          system:`Du bist ein Fußball-Assistent. Antworte NUR mit einem JSON-Objekt. Kein Markdown, keine Erklärungen. Format: {"results":[{"id":<number>,"home":<number>,"away":<number>}]}. Nur bereits abgeschlossene Spiele zurückgeben. Heute: ${new Date().toLocaleDateString("de-DE")}.`,
           tools:[{type:"web_search_20250305",name:"web_search"}],
-          messages:[{role:"user",content:`Suche WM 2026 Ergebnisse. Gib JSON zurück für gespielte Spiele:\n${GAMES_DATA.filter(g=>isStarted(g.date,g.time)).map(g=>`ID ${g.id}: ${g.home} vs ${g.away} (${g.date} ${g.time})`).join("\n")}\nNur JSON zurückgeben.`}]
+          messages:[{role:"user",content:`Suche die aktuellen Ergebnisse der FIFA WM 2026. Gib mir alle abgeschlossenen Spiele als JSON:\n${started.map(g=>`ID ${g.id}: ${g.home} vs ${g.away} (${g.date} ${g.time})`).join("\n")}\nNur JSON zurückgeben.`}]
         })
       });
       const data = await res.json();
       const text = data.content.filter(b=>b.type==="text").map(b=>b.text).join("");
       const parsed = JSON.parse(text.replace(/```json|```/g,"").trim());
       if (parsed.results) {
-        const newR = {...results};
-        parsed.results.forEach(r=>{newR[r.id]={home:r.home,away:r.away};});
-        setResults(newR);
-        try { await window.storage.set("wm2026_results", JSON.stringify(newR)); } catch {}
+        const nr={...results};
+        parsed.results.forEach(r=>{nr[r.id]={home:r.home,away:r.away};});
+        await saveResults(nr);
+        setLastFetch(new Date());
       }
-    } catch(e) { console.error(e); }
+    } catch(e){console.error(e);}
     setLoading(false);
   };
 
-  const groups = ["Alle","A","B","C","D","E","F","G","H","I","J","K","L"];
-  let displayGames = [];
-  if (activePhase === "Gruppenphase") displayGames = activeGroup === "Alle" ? GAMES_DATA : GAMES_DATA.filter(g=>g.group===activeGroup);
-  else if (activePhase === "Sechzehntelfinale") displayGames = ROUND_OF_32;
-  else displayGames = KNOCKOUT.filter(g=>g.round===activePhase);
+  const register = async (name, email) => {
+    const id = `${name.replace(/\s+/g,"_")}_${Date.now()}`;
+    const user = {id,name,email};
+    const newUsers = [...users.filter(u=>u.email!==email), user];
+    setUsers(newUsers);
+    setCurrentUser(user);
+    try { await window.storage.set("wm26_users", JSON.stringify(newUsers)); } catch{}
+    try { await window.storage.set("wm26_currentUser", JSON.stringify(user)); } catch{}
+  };
 
-  const totalTips = Object.keys(tips).length;
-  const correctTips = Object.entries(tips).filter(([id,tip])=>{ const r=results[id]; return r&&r.home===tip.home&&r.away===tip.away; }).length;
+  const saveTip = async (game, tip) => {
+    const uid = currentUser.id;
+    const newTips = {...allTips, [uid]:{...(allTips[uid]||{}), [game.id]:tip}};
+    setAllTips(newTips);
+    try { await window.storage.set("wm26_tips", JSON.stringify(newTips)); } catch{}
+    setModalGame(null);
+  };
+
+  const logout = async () => {
+    setCurrentUser(null);
+    try { await window.storage.delete("wm26_currentUser"); } catch{}
+  };
+
+  const myTips = currentUser ? (allTips[currentUser.id]||{}) : {};
+  const displayGames = activeGroup==="Alle" ? GAMES_DATA : GAMES_DATA.filter(g=>g.group===activeGroup);
+
+  // Build per-game allTips map: { gameId: { userName: tip } }
+  const gameTipsByUser = {};
+  users.forEach(u=>{
+    const ut = allTips[u.id]||{};
+    Object.entries(ut).forEach(([gid,tip])=>{
+      if (!gameTipsByUser[gid]) gameTipsByUser[gid]={};
+      gameTipsByUser[gid][u.name]=tip;
+    });
+  });
+
+  const tabStyle = (t) => ({
+    background:"none",border:"none",
+    borderBottom:tab===t?"3px solid #2563eb":"3px solid transparent",
+    color:tab===t?"#2563eb":"#64748b",
+    padding:"11px 0",flex:1,cursor:"pointer",
+    fontWeight:tab===t?700:400,fontSize:"0.82rem",
+    transition:"all 0.15s"
+  });
 
   return (
-    <div style={{ minHeight:"100vh", background:"#f1f5f9", color:"#1e3a5f", fontFamily:"system-ui,-apple-system,sans-serif" }}>
+    <div style={{minHeight:"100vh",background:"#f1f5f9",fontFamily:"system-ui,-apple-system,sans-serif",color:"#1e3a5f"}}>
       {/* Header */}
-      <div style={{ background:"linear-gradient(135deg,#1e3a5f,#2563eb)", padding:"20px 20px 16px", boxShadow:"0 2px 12px rgba(30,58,95,0.18)" }}>
-        <div style={{ maxWidth:700, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+      <div style={{background:"linear-gradient(135deg,#1e3a5f,#2563eb)",padding:"16px 16px 12px",boxShadow:"0 2px 12px rgba(30,58,95,0.2)"}}>
+        <div style={{maxWidth:680,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
           <div>
-            <h1 style={{ margin:0, fontSize:"1.5rem", fontWeight:800, color:"#fff", letterSpacing:"-0.02em" }}>⚽ WM 2026</h1>
-            <p style={{ margin:"2px 0 0", fontSize:"0.78rem", color:"#bfdbfe" }}>11. Juni – 19. Juli · Kanada, Mexiko, USA · Zeiten in MESZ</p>
+            <h1 style={{margin:0,fontSize:"1.35rem",fontWeight:800,color:"#fff"}}>⚽ WM 2026</h1>
+            <p style={{margin:"2px 0 0",fontSize:"0.72rem",color:"#bfdbfe"}}>11. Juni – 19. Juli · Alle Zeiten MESZ</p>
           </div>
-          <div style={{ textAlign:"right" }}>
-            {totalTips > 0 && (
-              <div style={{ fontSize:"0.75rem", color:"#fff", background:"rgba(255,255,255,0.15)", borderRadius:8, padding:"4px 10px", marginBottom:6 }}>
-                {totalTips} Tipps · {correctTips} ✓
+          <div style={{textAlign:"right",flexShrink:0}}>
+            {currentUser ? (
+              <div>
+                <div style={{fontSize:"0.72rem",color:"#fff",background:"rgba(255,255,255,0.15)",borderRadius:8,padding:"3px 8px",marginBottom:5}}>👤 {currentUser.name}</div>
+                <div style={{display:"flex",gap:5,justifyContent:"flex-end"}}>
+                  <button onClick={()=>fetchResults()} disabled={loading} style={{background:"rgba(255,255,255,0.2)",border:"1px solid rgba(255,255,255,0.3)",color:"#fff",padding:"4px 10px",borderRadius:6,cursor:loading?"not-allowed":"pointer",fontSize:"0.7rem",fontWeight:700}}>
+                    {loading?"…":"🔄"}
+                  </button>
+                  <button onClick={logout} style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#bfdbfe",padding:"4px 10px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem"}}>Abmelden</button>
+                </div>
+                {lastFetch && <div style={{fontSize:"0.62rem",color:"#bfdbfe",marginTop:3}}>Stand: {lastFetch.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}</div>}
+              </div>
+            ) : (
+              <button onClick={()=>fetchResults()} disabled={loading} style={{background:"rgba(255,255,255,0.2)",border:"1px solid rgba(255,255,255,0.3)",color:"#fff",padding:"5px 12px",borderRadius:7,cursor:loading?"not-allowed":"pointer",fontSize:"0.72rem",fontWeight:700}}>
+                {loading?"Lade…":"🔄 Aktualisieren"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",position:"sticky",top:0,zIndex:100}}>
+        <div style={{maxWidth:680,margin:"0 auto",display:"flex"}}>
+          {TABS.map(t=><button key={t} style={tabStyle(t)} onClick={()=>setTab(t)}>{t}</button>)}
+        </div>
+      </div>
+
+      <div style={{maxWidth:680,margin:"0 auto",padding:"12px 12px 32px"}}>
+
+        {/* ── SPIELPLAN ── */}
+        {tab==="Spielplan" && (
+          <>
+            {/* Group filter */}
+            <div style={{overflowX:"auto",marginBottom:10,paddingBottom:2}}>
+              <div style={{display:"flex",gap:4,minWidth:"max-content"}}>
+                {["Alle",...GROUPS].map(g=>(
+                  <button key={g} onClick={()=>setActiveGroup(g)} style={{background:activeGroup===g?"#2563eb":"#fff",border:"1px solid",borderColor:activeGroup===g?"#2563eb":"#e2e8f0",color:activeGroup===g?"#fff":"#64748b",padding:"4px 10px",borderRadius:99,cursor:"pointer",fontSize:"0.72rem",fontWeight:activeGroup===g?700:400,whiteSpace:"nowrap"}}>
+                    {g==="Alle"?"Alle":`Gr. ${g}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:7}}>
+              {displayGames.map(game=>(
+                <GameCard key={game.id} game={game} myTip={myTips[game.id]}
+                  allTips={gameTipsByUser[game.id]} results={results}
+                  onTip={()=>setModalGame(game)} currentUser={currentUser}/>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ── GRUPPEN ── */}
+        {tab==="Gruppen" && (
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            {GROUPS.map(g=><GroupTable key={g} group={g} results={results}/>)}
+          </div>
+        )}
+
+        {/* ── KICKTIPP ── */}
+        {tab==="Kicktipp" && (
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            {!currentUser && (
+              <RegisterForm onRegister={register}/>
+            )}
+            {currentUser && (
+              <div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:10,padding:"12px 14px",fontSize:"0.82rem",color:"#1d4ed8"}}>
+                ✅ Du nimmst als <strong>{currentUser.name}</strong> teil. Gib im Spielplan deine Tipps ab!
               </div>
             )}
-            <button onClick={fetchResults} disabled={loading} style={{ background:loading?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.2)", border:"1px solid rgba(255,255,255,0.3)", color:"#fff", padding:"5px 12px", borderRadius:7, cursor:loading?"not-allowed":"pointer", fontSize:"0.75rem", fontWeight:700 }}>
-              {loading ? "Lade…" : "🔄 Ergebnisse aktualisieren"}
-            </button>
+            <div>
+              <h3 style={{margin:"0 0 10px",fontSize:"0.95rem",color:"#1e3a5f",fontWeight:700}}>🏆 Gesamtwertung</h3>
+              <div style={{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:8,padding:"8px 12px",fontSize:"0.75rem",color:"#92400e",marginBottom:10}}>
+                <strong>Punktesystem:</strong> Exaktes Ergebnis = 5 Pkt · Gleiche Tordifferenz (richtige Tendenz) = 3 Pkt · Richtige Tendenz = 2 Pkt
+              </div>
+              <KicktippTable users={users} allTips={allTips} results={results}/>
+            </div>
+            {/* Per-game overview for current user */}
+            {currentUser && (
+              <div>
+                <h3 style={{margin:"0 0 8px",fontSize:"0.95rem",color:"#1e3a5f",fontWeight:700}}>Deine Tipps im Detail</h3>
+                <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                  {GAMES_DATA.filter(g=>myTips[g.id]||results[g.id]).map(g=>{
+                    const r=results[g.id]; const t=myTips[g.id];
+                    const pts=calcPoints(t,r);
+                    return (
+                      <div key={g.id} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:8,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6}}>
+                        <div style={{fontSize:"0.78rem",fontWeight:600}}>{FLAGS[g.home]||"🏳️"} {g.home} vs {g.away} {FLAGS[g.away]||"🏳️"}</div>
+                        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                          {r && <span style={{fontSize:"0.75rem",color:"#64748b"}}>Ergebnis: <strong>{r.home}:{r.away}</strong></span>}
+                          {t && <span style={{fontSize:"0.75rem",color:"#2563eb"}}>Tipp: <strong>{t.home}:{t.away}</strong></span>}
+                          {t && r && <span style={{fontSize:"0.75rem",fontWeight:700,background:pts>=5?"#dcfce7":pts>=3?"#fef9c3":pts>=2?"#fff7ed":"#f1f5f9",color:pts>=5?"#166534":pts>=3?"#854d0e":pts>=2?"#9a3412":"#64748b",padding:"1px 8px",borderRadius:99}}>{pts} Pkt</span>}
+                          {t && !r && canTip(g.date,g.time) && (
+                            <button onClick={()=>{setTab("Spielplan");setTimeout(()=>setModalGame(g),100);}} style={{fontSize:"0.68rem",background:"#eff6ff",border:"1px solid #bfdbfe",color:"#2563eb",padding:"2px 8px",borderRadius:99,cursor:"pointer"}}>Ändern</button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </div>
-
-      {/* Phase Tabs */}
-      <div style={{ background:"#fff", borderBottom:"1px solid #e2e8f0", overflowX:"auto", boxShadow:"0 1px 3px rgba(0,0,0,0.05)" }}>
-        <div style={{ display:"flex", maxWidth:700, margin:"0 auto" }}>
-          {PHASES.map(p => (
-            <button key={p} onClick={()=>setActivePhase(p)} style={{ background:"none", border:"none", borderBottom:activePhase===p?"2px solid #2563eb":"2px solid transparent", color:activePhase===p?"#2563eb":"#64748b", padding:"10px 14px", cursor:"pointer", fontWeight:activePhase===p?700:400, fontSize:"0.78rem", whiteSpace:"nowrap" }}>
-              {p}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Group filter */}
-      {activePhase === "Gruppenphase" && (
-        <div style={{ background:"#f8fafc", borderBottom:"1px solid #e2e8f0", overflowX:"auto" }}>
-          <div style={{ display:"flex", maxWidth:700, margin:"0 auto", gap:4, padding:"8px 12px" }}>
-            {groups.map(g => (
-              <button key={g} onClick={()=>setActiveGroup(g)} style={{ background:activeGroup===g?"#2563eb":"#fff", border:"1px solid", borderColor:activeGroup===g?"#2563eb":"#e2e8f0", color:activeGroup===g?"#fff":"#64748b", padding:"3px 10px", borderRadius:99, cursor:"pointer", fontSize:"0.75rem", fontWeight:activeGroup===g?700:400, whiteSpace:"nowrap" }}>
-                {g === "Alle" ? "Alle" : `Gr. ${g}`}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Games */}
-      <div style={{ maxWidth:700, margin:"0 auto", padding:"16px 12px", display:"flex", flexDirection:"column", gap:8 }}>
-        {displayGames.length === 0 && (
-          <div style={{ textAlign:"center", color:"#94a3b8", padding:"40px 0", fontSize:"0.9rem" }}>Noch keine Spiele in dieser Runde bekannt.</div>
         )}
-        {displayGames.map(game => (
-          <GameCard key={game.id} game={game} tip={tips[game.id]} result={results[game.id]} onTip={setModalGame} />
-        ))}
       </div>
 
-      {modalGame && (
-        <TipModal game={modalGame} onClose={()=>setModalGame(null)} onSave={(tip)=>saveTip(modalGame,tip)} existingTip={tips[modalGame.id]} />
+      {modalGame && currentUser && (
+        <TipModal game={modalGame} onClose={()=>setModalGame(null)} onSave={(tip)=>saveTip(modalGame,tip)} existingTip={myTips[modalGame.id]}/>
       )}
     </div>
   );
