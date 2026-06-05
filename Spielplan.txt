@@ -1,0 +1,354 @@
+import { useState, useEffect } from "react";
+
+const GAMES_DATA = [
+  { id:1, group:"A", date:"2026-06-11", time:"21:00", home:"Mexiko", away:"Südafrika", venue:"Mexiko-Stadt" },
+  { id:2, group:"A", date:"2026-06-12", time:"04:00", home:"Südkorea", away:"Tschechien", venue:"Guadalajara" },
+  { id:3, group:"A", date:"2026-06-18", time:"18:00", home:"Tschechien", away:"Südafrika", venue:"Atlanta" },
+  { id:4, group:"A", date:"2026-06-19", time:"01:00", home:"Mexiko", away:"Südkorea", venue:"Guadalajara" },
+  { id:5, group:"A", date:"2026-06-25", time:"03:00", home:"Tschechien", away:"Mexiko", venue:"Mexiko-Stadt" },
+  { id:6, group:"A", date:"2026-06-25", time:"03:00", home:"Südafrika", away:"Südkorea", venue:"Monterrey" },
+  { id:7, group:"B", date:"2026-06-12", time:"21:00", home:"Kanada", away:"Bosnien", venue:"Toronto" },
+  { id:8, group:"B", date:"2026-06-13", time:"21:00", home:"Katar", away:"Schweiz", venue:"San Francisco" },
+  { id:9, group:"B", date:"2026-06-18", time:"21:00", home:"Schweiz", away:"Bosnien", venue:"Los Angeles" },
+  { id:10, group:"B", date:"2026-06-19", time:"00:00", home:"Kanada", away:"Katar", venue:"Vancouver" },
+  { id:11, group:"B", date:"2026-06-24", time:"21:00", home:"Schweiz", away:"Kanada", venue:"Vancouver" },
+  { id:12, group:"B", date:"2026-06-24", time:"21:00", home:"Bosnien", away:"Katar", venue:"Seattle" },
+  { id:13, group:"C", date:"2026-06-14", time:"00:00", home:"Brasilien", away:"Marokko", venue:"New Jersey" },
+  { id:14, group:"C", date:"2026-06-14", time:"03:00", home:"Haiti", away:"Schottland", venue:"Boston" },
+  { id:15, group:"C", date:"2026-06-20", time:"00:00", home:"Schottland", away:"Marokko", venue:"Boston" },
+  { id:16, group:"C", date:"2026-06-20", time:"03:00", home:"Brasilien", away:"Haiti", venue:"Philadelphia" },
+  { id:17, group:"C", date:"2026-06-25", time:"00:00", home:"Schottland", away:"Brasilien", venue:"Miami" },
+  { id:18, group:"C", date:"2026-06-25", time:"00:00", home:"Marokko", away:"Haiti", venue:"Atlanta" },
+  { id:19, group:"D", date:"2026-06-13", time:"03:00", home:"USA", away:"Paraguay", venue:"Los Angeles" },
+  { id:20, group:"D", date:"2026-06-13", time:"06:00", home:"Australien", away:"Türkei", venue:"Vancouver" },
+  { id:21, group:"D", date:"2026-06-19", time:"06:00", home:"Türkei", away:"Paraguay", venue:"San Francisco" },
+  { id:22, group:"D", date:"2026-06-19", time:"21:00", home:"USA", away:"Australien", venue:"Seattle" },
+  { id:23, group:"D", date:"2026-06-26", time:"04:00", home:"Türkei", away:"USA", venue:"Los Angeles" },
+  { id:24, group:"D", date:"2026-06-26", time:"04:00", home:"Paraguay", away:"Australien", venue:"San Francisco" },
+  { id:25, group:"E", date:"2026-06-14", time:"19:00", home:"Deutschland", away:"Curaçao", venue:"Houston" },
+  { id:26, group:"E", date:"2026-06-15", time:"01:00", home:"Elfenbeinküste", away:"Ecuador", venue:"Philadelphia" },
+  { id:27, group:"E", date:"2026-06-20", time:"22:00", home:"Deutschland", away:"Elfenbeinküste", venue:"Toronto" },
+  { id:28, group:"E", date:"2026-06-21", time:"02:00", home:"Ecuador", away:"Curaçao", venue:"Kansas City" },
+  { id:29, group:"E", date:"2026-06-25", time:"22:00", home:"Ecuador", away:"Deutschland", venue:"New Jersey" },
+  { id:30, group:"E", date:"2026-06-25", time:"22:00", home:"Curaçao", away:"Elfenbeinküste", venue:"Philadelphia" },
+  { id:31, group:"F", date:"2026-06-14", time:"22:00", home:"Niederlande", away:"Japan", venue:"Dallas" },
+  { id:32, group:"F", date:"2026-06-15", time:"04:00", home:"Schweden", away:"Tunesien", venue:"Monterrey" },
+  { id:33, group:"F", date:"2026-06-20", time:"19:00", home:"Niederlande", away:"Schweden", venue:"Houston" },
+  { id:34, group:"F", date:"2026-06-21", time:"06:00", home:"Tunesien", away:"Japan", venue:"Monterrey" },
+  { id:35, group:"F", date:"2026-06-26", time:"01:00", home:"Tunesien", away:"Niederlande", venue:"Kansas City" },
+  { id:36, group:"F", date:"2026-06-26", time:"01:00", home:"Japan", away:"Schweden", venue:"Dallas" },
+  { id:37, group:"G", date:"2026-06-15", time:"21:00", home:"Belgien", away:"Ägypten", venue:"Seattle" },
+  { id:38, group:"G", date:"2026-06-16", time:"03:00", home:"Iran", away:"Neuseeland", venue:"Los Angeles" },
+  { id:39, group:"G", date:"2026-06-21", time:"21:00", home:"Belgien", away:"Iran", venue:"Los Angeles" },
+  { id:40, group:"G", date:"2026-06-22", time:"03:00", home:"Neuseeland", away:"Ägypten", venue:"Vancouver" },
+  { id:41, group:"G", date:"2026-06-27", time:"05:00", home:"Neuseeland", away:"Belgien", venue:"Vancouver" },
+  { id:42, group:"G", date:"2026-06-27", time:"05:00", home:"Ägypten", away:"Iran", venue:"Seattle" },
+  { id:43, group:"H", date:"2026-06-15", time:"18:00", home:"Spanien", away:"Kap Verde", venue:"Atlanta" },
+  { id:44, group:"H", date:"2026-06-16", time:"00:00", home:"Saudi-Arabien", away:"Uruguay", venue:"Miami" },
+  { id:45, group:"H", date:"2026-06-21", time:"18:00", home:"Spanien", away:"Saudi-Arabien", venue:"Atlanta" },
+  { id:46, group:"H", date:"2026-06-22", time:"00:00", home:"Uruguay", away:"Kap Verde", venue:"Miami" },
+  { id:47, group:"H", date:"2026-06-27", time:"02:00", home:"Uruguay", away:"Spanien", venue:"Guadalajara" },
+  { id:48, group:"H", date:"2026-06-27", time:"02:00", home:"Kap Verde", away:"Saudi-Arabien", venue:"Houston" },
+  { id:49, group:"I", date:"2026-06-16", time:"21:00", home:"Frankreich", away:"Senegal", venue:"New Jersey" },
+  { id:50, group:"I", date:"2026-06-17", time:"00:00", home:"Irak", away:"Norwegen", venue:"Boston" },
+  { id:51, group:"I", date:"2026-06-22", time:"23:00", home:"Frankreich", away:"Irak", venue:"Philadelphia" },
+  { id:52, group:"I", date:"2026-06-23", time:"02:00", home:"Norwegen", away:"Senegal", venue:"New Jersey" },
+  { id:53, group:"I", date:"2026-06-26", time:"21:00", home:"Norwegen", away:"Frankreich", venue:"Boston" },
+  { id:54, group:"I", date:"2026-06-26", time:"21:00", home:"Senegal", away:"Irak", venue:"Toronto" },
+  { id:55, group:"J", date:"2026-06-17", time:"03:00", home:"Argentinien", away:"Algerien", venue:"Kansas City" },
+  { id:56, group:"J", date:"2026-06-17", time:"06:00", home:"Österreich", away:"Jordanien", venue:"San Francisco" },
+  { id:57, group:"J", date:"2026-06-22", time:"19:00", home:"Argentinien", away:"Österreich", venue:"Dallas" },
+  { id:58, group:"J", date:"2026-06-23", time:"03:00", home:"Jordanien", away:"Algerien", venue:"San Francisco" },
+  { id:59, group:"J", date:"2026-06-28", time:"04:00", home:"Jordanien", away:"Argentinien", venue:"Dallas" },
+  { id:60, group:"J", date:"2026-06-28", time:"04:00", home:"Algerien", away:"Österreich", venue:"Kansas City" },
+  { id:61, group:"K", date:"2026-06-17", time:"19:00", home:"Portugal", away:"DR Kongo", venue:"Houston" },
+  { id:62, group:"K", date:"2026-06-18", time:"04:00", home:"Usbekistan", away:"Kolumbien", venue:"Mexiko-Stadt" },
+  { id:63, group:"K", date:"2026-06-23", time:"19:00", home:"Portugal", away:"Usbekistan", venue:"Houston" },
+  { id:64, group:"K", date:"2026-06-24", time:"03:00", home:"Kolumbien", away:"DR Kongo", venue:"Guadalajara" },
+  { id:65, group:"K", date:"2026-06-28", time:"01:30", home:"Kolumbien", away:"Portugal", venue:"Miami" },
+  { id:66, group:"K", date:"2026-06-28", time:"01:30", home:"DR Kongo", away:"Usbekistan", venue:"Atlanta" },
+  { id:67, group:"L", date:"2026-06-17", time:"22:00", home:"England", away:"Kroatien", venue:"Dallas" },
+  { id:68, group:"L", date:"2026-06-17", time:"01:00", home:"Ghana", away:"Panama", venue:"Toronto" },
+  { id:69, group:"L", date:"2026-06-23", time:"22:00", home:"England", away:"Ghana", venue:"Boston" },
+  { id:70, group:"L", date:"2026-06-24", time:"01:00", home:"Panama", away:"Kroatien", venue:"Toronto" },
+  { id:71, group:"L", date:"2026-06-27", time:"23:00", home:"Panama", away:"England", venue:"New Jersey" },
+  { id:72, group:"L", date:"2026-06-27", time:"23:00", home:"Kroatien", away:"Ghana", venue:"Philadelphia" },
+];
+
+const ROUND_OF_32 = [
+  { id:101, round:"Sechzehntelfinale", date:"2026-06-29", time:"19:00", home:"1A", away:"3?", venue:"Boston" },
+  { id:102, round:"Sechzehntelfinale", date:"2026-06-29", time:"22:00", home:"1B", away:"3?", venue:"Vancouver" },
+  { id:103, round:"Sechzehntelfinale", date:"2026-06-30", time:"19:00", home:"2I", away:"2J", venue:"Dallas" },
+  { id:104, round:"Sechzehntelfinale", date:"2026-06-30", time:"22:30", home:"1E", away:"3?", venue:"Boston" },
+  { id:105, round:"Sechzehntelfinale", date:"2026-07-01", time:"19:00", home:"1F", away:"3?", venue:"Seattle" },
+  { id:106, round:"Sechzehntelfinale", date:"2026-07-01", time:"22:30", home:"1D", away:"3?", venue:"Los Angeles" },
+  { id:107, round:"Sechzehntelfinale", date:"2026-07-02", time:"19:00", home:"1K", away:"3?", venue:"Houston" },
+  { id:108, round:"Sechzehntelfinale", date:"2026-07-02", time:"22:00", home:"1G", away:"3?", venue:"Atlanta" },
+  { id:109, round:"Sechzehntelfinale", date:"2026-07-03", time:"19:00", home:"1C", away:"3?", venue:"Miami" },
+  { id:110, round:"Sechzehntelfinale", date:"2026-07-03", time:"22:00", home:"2K", away:"2L", venue:"Kansas City" },
+  { id:111, round:"Sechzehntelfinale", date:"2026-07-04", time:"19:00", home:"2D", away:"2E", venue:"Philadelphia" },
+  { id:112, round:"Sechzehntelfinale", date:"2026-07-04", time:"22:30", home:"1H", away:"3?", venue:"New Jersey" },
+  { id:113, round:"Sechzehntelfinale", date:"2026-07-05", time:"22:30", home:"2F", away:"2G", venue:"Toronto" },
+  { id:114, round:"Sechzehntelfinale", date:"2026-07-05", time:"19:00", home:"1L", away:"3?", venue:"Dallas" },
+  { id:115, round:"Sechzehntelfinale", date:"2026-07-06", time:"19:00", home:"2A", away:"2B", venue:"Guadalajara" },
+  { id:116, round:"Sechzehntelfinale", date:"2026-07-06", time:"22:30", home:"2C", away:"2H", venue:"Monterrey" },
+];
+
+const KNOCKOUT = [
+  { id:201, round:"Achtelfinale", date:"2026-07-09", time:"22:00", home:"S101", away:"S102", venue:"New Jersey" },
+  { id:202, round:"Achtelfinale", date:"2026-07-09", time:"19:00", home:"S103", away:"S104", venue:"Los Angeles" },
+  { id:203, round:"Achtelfinale", date:"2026-07-10", time:"19:00", home:"S105", away:"S106", venue:"Houston" },
+  { id:204, round:"Achtelfinale", date:"2026-07-10", time:"22:00", home:"S107", away:"S108", venue:"Miami" },
+  { id:205, round:"Achtelfinale", date:"2026-07-11", time:"19:00", home:"S109", away:"S110", venue:"Seattle" },
+  { id:206, round:"Achtelfinale", date:"2026-07-11", time:"22:00", home:"S111", away:"S112", venue:"Dallas" },
+  { id:207, round:"Achtelfinale", date:"2026-07-12", time:"19:00", home:"S113", away:"S114", venue:"Kansas City" },
+  { id:208, round:"Achtelfinale", date:"2026-07-12", time:"22:00", home:"S115", away:"S116", venue:"Atlanta" },
+  { id:301, round:"Viertelfinale", date:"2026-07-15", time:"22:00", home:"S201", away:"S202", venue:"New Jersey" },
+  { id:302, round:"Viertelfinale", date:"2026-07-15", time:"19:00", home:"S203", away:"S204", venue:"Los Angeles" },
+  { id:303, round:"Viertelfinale", date:"2026-07-16", time:"19:00", home:"S205", away:"S206", venue:"Dallas" },
+  { id:304, round:"Viertelfinale", date:"2026-07-16", time:"22:00", home:"S207", away:"S208", venue:"Miami" },
+  { id:401, round:"Halbfinale", date:"2026-07-19", time:"21:00", home:"S301", away:"S302", venue:"New Jersey" },
+  { id:402, round:"Halbfinale", date:"2026-07-20", time:"21:00", home:"S303", away:"S304", venue:"Dallas" },
+  { id:501, round:"Spiel um Platz 3", date:"2026-07-18", time:"21:00", home:"Verlierer HF1", away:"Verlierer HF2", venue:"Miami" },
+  { id:502, round:"Finale", date:"2026-07-19", time:"21:00", home:"Sieger HF1", away:"Sieger HF2", venue:"New York/New Jersey" },
+];
+
+const FLAGS = {
+  "Mexiko":"🇲🇽","Südafrika":"🇿🇦","Südkorea":"🇰🇷","Tschechien":"🇨🇿","Kanada":"🇨🇦","Bosnien":"🇧🇦",
+  "Katar":"🇶🇦","Schweiz":"🇨🇭","Brasilien":"🇧🇷","Marokko":"🇲🇦","Haiti":"🇭🇹","Schottland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  "USA":"🇺🇸","Paraguay":"🇵🇾","Australien":"🇦🇺","Türkei":"🇹🇷","Deutschland":"🇩🇪","Curaçao":"🇨🇼",
+  "Elfenbeinküste":"🇨🇮","Ecuador":"🇪🇨","Niederlande":"🇳🇱","Japan":"🇯🇵","Schweden":"🇸🇪","Tunesien":"🇹🇳",
+  "Belgien":"🇧🇪","Ägypten":"🇪🇬","Iran":"🇮🇷","Neuseeland":"🇳🇿","Spanien":"🇪🇸","Kap Verde":"🇨🇻",
+  "Saudi-Arabien":"🇸🇦","Uruguay":"🇺🇾","Frankreich":"🇫🇷","Senegal":"🇸🇳","Irak":"🇮🇶","Norwegen":"🇳🇴",
+  "Argentinien":"🇦🇷","Algerien":"🇩🇿","Österreich":"🇦🇹","Jordanien":"🇯🇴","Portugal":"🇵🇹","DR Kongo":"🇨🇩",
+  "Usbekistan":"🇺🇿","Kolumbien":"🇨🇴","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Kroatien":"🇭🇷","Ghana":"🇬🇭","Panama":"🇵🇦",
+};
+
+const PHASES = ["Gruppenphase","Sechzehntelfinale","Achtelfinale","Viertelfinale","Halbfinale","Finale"];
+
+function parseDateTime(date, time) {
+  return new Date(`${date}T${time}:00`);
+}
+function canTip(date, time) {
+  const kickoff = parseDateTime(date, time);
+  return new Date() < new Date(kickoff.getTime() - 5 * 60 * 1000);
+}
+function isStarted(date, time) {
+  return new Date() >= parseDateTime(date, time);
+}
+function formatDate(date) {
+  return new Date(date).toLocaleDateString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit" });
+}
+
+function GroupTag({ group }) {
+  return (
+    <span style={{ background:"#dbeafe", color:"#1d4ed8", fontSize:"0.65rem", padding:"1px 7px", borderRadius:99, fontWeight:700 }}>
+      Gr. {group}
+    </span>
+  );
+}
+
+function TipModal({ game, onClose, onSave, existingTip }) {
+  const [h, setH] = useState(existingTip ? String(existingTip.home) : "");
+  const [a, setA] = useState(existingTip ? String(existingTip.away) : "");
+  const inp = { width:52, textAlign:"center", background:"#fff", border:"2px solid #3b82f6", borderRadius:8, color:"#1e3a5f", fontSize:"1.5rem", fontWeight:700, padding:"6px", outline:"none" };
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(15,39,68,0.55)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
+      <div style={{ background:"#fff", border:"1px solid #bfdbfe", borderRadius:16, padding:"28px 32px", minWidth:300, color:"#1e3a5f", boxShadow:"0 20px 60px rgba(30,58,95,0.18)" }}>
+        <div style={{ marginBottom:8, fontSize:"0.8rem", color:"#64748b" }}>{formatDate(game.date)} · {game.time} Uhr · {game.venue}</div>
+        <div style={{ fontSize:"1.05rem", fontWeight:700, marginBottom:20, color:"#1e3a5f" }}>
+          {FLAGS[game.home]||"🏳️"} {game.home} <span style={{color:"#3b82f6",margin:"0 8px"}}>vs</span> {game.away} {FLAGS[game.away]||"🏳️"}
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24, justifyContent:"center" }}>
+          <input type="number" min="0" max="20" value={h} onChange={e=>setH(e.target.value)} style={inp} placeholder="–" />
+          <span style={{ color:"#94a3b8", fontWeight:800, fontSize:"1.2rem" }}>:</span>
+          <input type="number" min="0" max="20" value={a} onChange={e=>setA(e.target.value)} style={inp} placeholder="–" />
+        </div>
+        <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
+          <button onClick={onClose} style={{ background:"#f1f5f9", border:"none", color:"#64748b", padding:"8px 18px", borderRadius:8, cursor:"pointer", fontSize:"0.9rem" }}>Abbrechen</button>
+          <button onClick={()=>{ if(h!==""&&a!=="") onSave({home:parseInt(h),away:parseInt(a)}); }} style={{ background:"#2563eb", border:"none", color:"white", padding:"8px 18px", borderRadius:8, cursor:"pointer", fontWeight:700, fontSize:"0.9rem" }}>Speichern</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GameCard({ game, tip, onTip, result }) {
+  const tipAllowed = canTip(game.date, game.time);
+  const started = isStarted(game.date, game.time);
+  const isDE = game.home === "Deutschland" || game.away === "Deutschland";
+
+  return (
+    <div style={{ background:"#fff", border: isDE ? "1.5px solid #3b82f6" : "1px solid #e2e8f0", borderRadius:10, padding:"12px 16px", boxShadow:"0 1px 4px rgba(30,58,95,0.07)" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+        <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+          {game.group && <GroupTag group={game.group} />}
+          {game.round && <span style={{ background:"#dbeafe", color:"#1d4ed8", fontSize:"0.65rem", padding:"1px 7px", borderRadius:99, fontWeight:700 }}>{game.round}</span>}
+          {isDE && <span style={{ background:"#2563eb", color:"#fff", fontSize:"0.65rem", padding:"1px 7px", borderRadius:99, fontWeight:700 }}>🇩🇪 Deutschland</span>}
+        </div>
+        <span style={{ fontSize:"0.72rem", color:"#94a3b8" }}>{game.venue}</span>
+      </div>
+
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ flex:1, display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:"1.3rem" }}>{FLAGS[game.home]||"🏳️"}</span>
+          <span style={{ fontWeight:600, color:"#1e3a5f", fontSize:"0.9rem" }}>{game.home}</span>
+        </div>
+        <div style={{ textAlign:"center", minWidth:90 }}>
+          {result ? (
+            <span style={{ fontSize:"1.4rem", fontWeight:800, color:"#2563eb" }}>{result.home} : {result.away}</span>
+          ) : (
+            <span style={{ fontSize:"0.9rem", color:"#64748b", fontWeight:700 }}>{game.time}</span>
+          )}
+          <div style={{ fontSize:"0.65rem", color:"#94a3b8", marginTop:1 }}>{formatDate(game.date)}</div>
+        </div>
+        <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, justifyContent:"flex-end" }}>
+          <span style={{ fontWeight:600, color:"#1e3a5f", fontSize:"0.9rem" }}>{game.away}</span>
+          <span style={{ fontSize:"1.3rem" }}>{FLAGS[game.away]||"🏳️"}</span>
+        </div>
+      </div>
+
+      <div style={{ display:"flex", justifyContent:"flex-end", alignItems:"center", gap:8, marginTop:10, borderTop:"1px solid #f1f5f9", paddingTop:8 }}>
+        {tip && (
+          <span style={{ fontSize:"0.75rem", background:"#eff6ff", color:"#2563eb", padding:"2px 9px", borderRadius:99, border:"1px solid #bfdbfe" }}>
+            Tipp: {tip.home} : {tip.away}
+          </span>
+        )}
+        {tipAllowed ? (
+          <button onClick={()=>onTip(game)} style={{ background:"#2563eb", border:"none", color:"white", padding:"4px 13px", borderRadius:6, cursor:"pointer", fontSize:"0.75rem", fontWeight:700 }}>
+            {tip ? "Ändern" : "Tipp abgeben"}
+          </button>
+        ) : started ? (
+          <span style={{ fontSize:"0.7rem", color:"#94a3b8" }}>Läuft / Beendet</span>
+        ) : (
+          <span style={{ fontSize:"0.7rem", color:"#ef4444", fontWeight:600 }}>⏸ Tipp gesperrt</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  const [tips, setTips] = useState({});
+  const [results, setResults] = useState({});
+  const [modalGame, setModalGame] = useState(null);
+  const [activePhase, setActivePhase] = useState("Gruppenphase");
+  const [activeGroup, setActiveGroup] = useState("Alle");
+  const [loading, setLoading] = useState(false);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    (async () => {
+      try { const t = await window.storage.get("wm2026_tips"); if (t) setTips(JSON.parse(t.value)); } catch {}
+      try { const r = await window.storage.get("wm2026_results"); if (r) setResults(JSON.parse(r.value)); } catch {}
+    })();
+  }, []);
+
+  useEffect(() => {
+    const iv = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const saveTip = async (game, tip) => {
+    const newTips = { ...tips, [game.id]: tip };
+    setTips(newTips);
+    try { await window.storage.set("wm2026_tips", JSON.stringify(newTips)); } catch {}
+    setModalGame(null);
+  };
+
+  const fetchResults = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          model:"claude-sonnet-4-20250514", max_tokens:1000,
+          system:`Du bist ein Fußball-Assistent. Gib NUR ein JSON-Objekt zurück, keine Erklärungen, keine Markdown-Backticks. Format: {"results": [{"id": <spielID>, "home": <tore>, "away": <tore>}]}. Gib nur bereits gespielte Spiele zurück. Heute: ${now.toLocaleDateString("de-DE")}.`,
+          tools:[{type:"web_search_20250305",name:"web_search"}],
+          messages:[{role:"user",content:`Suche WM 2026 Ergebnisse. Gib JSON zurück für gespielte Spiele:\n${GAMES_DATA.filter(g=>isStarted(g.date,g.time)).map(g=>`ID ${g.id}: ${g.home} vs ${g.away} (${g.date} ${g.time})`).join("\n")}\nNur JSON zurückgeben.`}]
+        })
+      });
+      const data = await res.json();
+      const text = data.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+      const parsed = JSON.parse(text.replace(/```json|```/g,"").trim());
+      if (parsed.results) {
+        const newR = {...results};
+        parsed.results.forEach(r=>{newR[r.id]={home:r.home,away:r.away};});
+        setResults(newR);
+        try { await window.storage.set("wm2026_results", JSON.stringify(newR)); } catch {}
+      }
+    } catch(e) { console.error(e); }
+    setLoading(false);
+  };
+
+  const groups = ["Alle","A","B","C","D","E","F","G","H","I","J","K","L"];
+  let displayGames = [];
+  if (activePhase === "Gruppenphase") displayGames = activeGroup === "Alle" ? GAMES_DATA : GAMES_DATA.filter(g=>g.group===activeGroup);
+  else if (activePhase === "Sechzehntelfinale") displayGames = ROUND_OF_32;
+  else displayGames = KNOCKOUT.filter(g=>g.round===activePhase);
+
+  const totalTips = Object.keys(tips).length;
+  const correctTips = Object.entries(tips).filter(([id,tip])=>{ const r=results[id]; return r&&r.home===tip.home&&r.away===tip.away; }).length;
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#f1f5f9", color:"#1e3a5f", fontFamily:"system-ui,-apple-system,sans-serif" }}>
+      {/* Header */}
+      <div style={{ background:"linear-gradient(135deg,#1e3a5f,#2563eb)", padding:"20px 20px 16px", boxShadow:"0 2px 12px rgba(30,58,95,0.18)" }}>
+        <div style={{ maxWidth:700, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+          <div>
+            <h1 style={{ margin:0, fontSize:"1.5rem", fontWeight:800, color:"#fff", letterSpacing:"-0.02em" }}>⚽ WM 2026</h1>
+            <p style={{ margin:"2px 0 0", fontSize:"0.78rem", color:"#bfdbfe" }}>11. Juni – 19. Juli · Kanada, Mexiko, USA · Zeiten in MESZ</p>
+          </div>
+          <div style={{ textAlign:"right" }}>
+            {totalTips > 0 && (
+              <div style={{ fontSize:"0.75rem", color:"#fff", background:"rgba(255,255,255,0.15)", borderRadius:8, padding:"4px 10px", marginBottom:6 }}>
+                {totalTips} Tipps · {correctTips} ✓
+              </div>
+            )}
+            <button onClick={fetchResults} disabled={loading} style={{ background:loading?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.2)", border:"1px solid rgba(255,255,255,0.3)", color:"#fff", padding:"5px 12px", borderRadius:7, cursor:loading?"not-allowed":"pointer", fontSize:"0.75rem", fontWeight:700 }}>
+              {loading ? "Lade…" : "🔄 Ergebnisse aktualisieren"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Phase Tabs */}
+      <div style={{ background:"#fff", borderBottom:"1px solid #e2e8f0", overflowX:"auto", boxShadow:"0 1px 3px rgba(0,0,0,0.05)" }}>
+        <div style={{ display:"flex", maxWidth:700, margin:"0 auto" }}>
+          {PHASES.map(p => (
+            <button key={p} onClick={()=>setActivePhase(p)} style={{ background:"none", border:"none", borderBottom:activePhase===p?"2px solid #2563eb":"2px solid transparent", color:activePhase===p?"#2563eb":"#64748b", padding:"10px 14px", cursor:"pointer", fontWeight:activePhase===p?700:400, fontSize:"0.78rem", whiteSpace:"nowrap" }}>
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Group filter */}
+      {activePhase === "Gruppenphase" && (
+        <div style={{ background:"#f8fafc", borderBottom:"1px solid #e2e8f0", overflowX:"auto" }}>
+          <div style={{ display:"flex", maxWidth:700, margin:"0 auto", gap:4, padding:"8px 12px" }}>
+            {groups.map(g => (
+              <button key={g} onClick={()=>setActiveGroup(g)} style={{ background:activeGroup===g?"#2563eb":"#fff", border:"1px solid", borderColor:activeGroup===g?"#2563eb":"#e2e8f0", color:activeGroup===g?"#fff":"#64748b", padding:"3px 10px", borderRadius:99, cursor:"pointer", fontSize:"0.75rem", fontWeight:activeGroup===g?700:400, whiteSpace:"nowrap" }}>
+                {g === "Alle" ? "Alle" : `Gr. ${g}`}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Games */}
+      <div style={{ maxWidth:700, margin:"0 auto", padding:"16px 12px", display:"flex", flexDirection:"column", gap:8 }}>
+        {displayGames.length === 0 && (
+          <div style={{ textAlign:"center", color:"#94a3b8", padding:"40px 0", fontSize:"0.9rem" }}>Noch keine Spiele in dieser Runde bekannt.</div>
+        )}
+        {displayGames.map(game => (
+          <GameCard key={game.id} game={game} tip={tips[game.id]} result={results[game.id]} onTip={setModalGame} />
+        ))}
+      </div>
+
+      {modalGame && (
+        <TipModal game={modalGame} onClose={()=>setModalGame(null)} onSave={(tip)=>saveTip(modalGame,tip)} existingTip={tips[modalGame.id]} />
+      )}
+    </div>
+  );
+}
