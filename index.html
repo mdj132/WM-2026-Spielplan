@@ -1,205 +1,167 @@
-import { useState, useEffect } from "react";
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WM 2026 – Spielplan & Kicktipp</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#1e3a5f;min-height:100vh}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+::-webkit-scrollbar{height:4px;width:4px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect}=React;
 
-const GAMES = [
-  {id:1, g:"A",date:"2026-06-11",time:"21:00",home:"Mexiko",         away:"Südafrika",     venue:"Mexiko-Stadt"},
-  {id:2, g:"A",date:"2026-06-12",time:"04:00",home:"Südkorea",       away:"Tschechien",    venue:"Guadalajara"},
-  {id:7, g:"B",date:"2026-06-12",time:"21:00",home:"Kanada",         away:"Bosnien",       venue:"Toronto"},
-  {id:19,g:"D",date:"2026-06-13",time:"03:00",home:"USA",            away:"Paraguay",      venue:"Los Angeles"},
-  {id:8, g:"B",date:"2026-06-13",time:"21:00",home:"Katar",          away:"Schweiz",       venue:"San Francisco"},
-  {id:13,g:"C",date:"2026-06-14",time:"00:00",home:"Brasilien",      away:"Marokko",       venue:"New Jersey"},
-  {id:14,g:"C",date:"2026-06-14",time:"03:00",home:"Haiti",          away:"Schottland",    venue:"Boston"},
-  {id:20,g:"D",date:"2026-06-14",time:"06:00",home:"Australien",     away:"Türkei",        venue:"Vancouver"},
-  {id:25,g:"E",date:"2026-06-14",time:"19:00",home:"Deutschland",    away:"Curaçao",       venue:"Houston"},
-  {id:31,g:"F",date:"2026-06-14",time:"22:00",home:"Niederlande",    away:"Japan",         venue:"Dallas"},
-  {id:26,g:"E",date:"2026-06-15",time:"01:00",home:"Elfenbeinküste", away:"Ecuador",       venue:"Philadelphia"},
-  {id:32,g:"F",date:"2026-06-15",time:"04:00",home:"Schweden",       away:"Tunesien",      venue:"Monterrey"},
-  {id:43,g:"H",date:"2026-06-15",time:"18:00",home:"Spanien",        away:"Kap Verde",     venue:"Atlanta"},
-  {id:37,g:"G",date:"2026-06-15",time:"21:00",home:"Belgien",        away:"Ägypten",       venue:"Seattle"},
-  {id:44,g:"H",date:"2026-06-16",time:"00:00",home:"Saudi-Arabien",  away:"Uruguay",       venue:"Miami"},
-  {id:38,g:"G",date:"2026-06-16",time:"03:00",home:"Iran",           away:"Neuseeland",    venue:"Los Angeles"},
-  {id:49,g:"I",date:"2026-06-16",time:"21:00",home:"Frankreich",     away:"Senegal",       venue:"New Jersey"},
-  {id:50,g:"I",date:"2026-06-17",time:"00:00",home:"Irak",           away:"Norwegen",      venue:"Boston"},
-  {id:55,g:"J",date:"2026-06-17",time:"03:00",home:"Argentinien",    away:"Algerien",      venue:"Kansas City"},
-  {id:56,g:"J",date:"2026-06-17",time:"06:00",home:"Österreich",     away:"Jordanien",     venue:"San Francisco"},
-  {id:61,g:"K",date:"2026-06-17",time:"19:00",home:"Portugal",       away:"DR Kongo",      venue:"Houston"},
-  {id:67,g:"L",date:"2026-06-17",time:"22:00",home:"England",        away:"Kroatien",      venue:"Dallas"},
-  {id:68,g:"L",date:"2026-06-18",time:"01:00",home:"Ghana",          away:"Panama",        venue:"Toronto"},
-  {id:62,g:"K",date:"2026-06-18",time:"04:00",home:"Usbekistan",     away:"Kolumbien",     venue:"Mexiko-Stadt"},
-  {id:3, g:"A",date:"2026-06-18",time:"18:00",home:"Tschechien",     away:"Südafrika",     venue:"Atlanta"},
-  {id:9, g:"B",date:"2026-06-18",time:"21:00",home:"Schweiz",        away:"Bosnien",       venue:"Los Angeles"},
-  {id:10,g:"B",date:"2026-06-19",time:"00:00",home:"Kanada",         away:"Katar",         venue:"Vancouver"},
-  {id:4, g:"A",date:"2026-06-19",time:"01:00",home:"Mexiko",         away:"Südkorea",      venue:"Guadalajara"},
-  {id:21,g:"D",date:"2026-06-19",time:"06:00",home:"Türkei",         away:"Paraguay",      venue:"San Francisco"},
-  {id:22,g:"D",date:"2026-06-19",time:"21:00",home:"USA",            away:"Australien",    venue:"Seattle"},
-  {id:15,g:"C",date:"2026-06-20",time:"00:00",home:"Schottland",     away:"Marokko",       venue:"Boston"},
-  {id:16,g:"C",date:"2026-06-20",time:"03:00",home:"Brasilien",      away:"Haiti",         venue:"Philadelphia"},
-  {id:33,g:"F",date:"2026-06-20",time:"19:00",home:"Niederlande",    away:"Schweden",      venue:"Houston"},
-  {id:27,g:"E",date:"2026-06-20",time:"22:00",home:"Deutschland",    away:"Elfenbeinküste",venue:"Toronto"},
-  {id:28,g:"E",date:"2026-06-21",time:"02:00",home:"Ecuador",        away:"Curaçao",       venue:"Kansas City"},
-  {id:34,g:"F",date:"2026-06-21",time:"06:00",home:"Tunesien",       away:"Japan",         venue:"Monterrey"},
-  {id:45,g:"H",date:"2026-06-21",time:"18:00",home:"Spanien",        away:"Saudi-Arabien", venue:"Atlanta"},
-  {id:39,g:"G",date:"2026-06-21",time:"21:00",home:"Belgien",        away:"Iran",          venue:"Los Angeles"},
-  {id:46,g:"H",date:"2026-06-22",time:"00:00",home:"Uruguay",        away:"Kap Verde",     venue:"Miami"},
-  {id:40,g:"G",date:"2026-06-22",time:"03:00",home:"Neuseeland",     away:"Ägypten",       venue:"Vancouver"},
-  {id:57,g:"J",date:"2026-06-22",time:"19:00",home:"Argentinien",    away:"Österreich",    venue:"Dallas"},
-  {id:51,g:"I",date:"2026-06-22",time:"23:00",home:"Frankreich",     away:"Irak",          venue:"Philadelphia"},
-  {id:52,g:"I",date:"2026-06-23",time:"02:00",home:"Norwegen",       away:"Senegal",       venue:"New Jersey"},
-  {id:58,g:"J",date:"2026-06-23",time:"03:00",home:"Jordanien",      away:"Algerien",      venue:"San Francisco"},
-  {id:63,g:"K",date:"2026-06-23",time:"19:00",home:"Portugal",       away:"Usbekistan",    venue:"Houston"},
-  {id:69,g:"L",date:"2026-06-23",time:"22:00",home:"England",        away:"Ghana",         venue:"Boston"},
-  {id:70,g:"L",date:"2026-06-24",time:"01:00",home:"Panama",         away:"Kroatien",      venue:"Toronto"},
-  {id:64,g:"K",date:"2026-06-24",time:"03:00",home:"Kolumbien",      away:"DR Kongo",      venue:"Guadalajara"},
-  {id:11,g:"B",date:"2026-06-24",time:"21:00",home:"Schweiz",        away:"Kanada",        venue:"Vancouver"},
-  {id:12,g:"B",date:"2026-06-24",time:"21:00",home:"Bosnien",        away:"Katar",         venue:"Seattle"},
-  {id:17,g:"C",date:"2026-06-25",time:"00:00",home:"Schottland",     away:"Brasilien",     venue:"Miami"},
-  {id:18,g:"C",date:"2026-06-25",time:"00:00",home:"Marokko",        away:"Haiti",         venue:"Atlanta"},
-  {id:5, g:"A",date:"2026-06-25",time:"03:00",home:"Tschechien",     away:"Mexiko",        venue:"Mexiko-Stadt"},
-  {id:6, g:"A",date:"2026-06-25",time:"03:00",home:"Südafrika",      away:"Südkorea",      venue:"Monterrey"},
-  {id:29,g:"E",date:"2026-06-25",time:"22:00",home:"Ecuador",        away:"Deutschland",   venue:"New Jersey"},
-  {id:30,g:"E",date:"2026-06-25",time:"22:00",home:"Curaçao",        away:"Elfenbeinküste",venue:"Philadelphia"},
-  {id:35,g:"F",date:"2026-06-26",time:"01:00",home:"Tunesien",       away:"Niederlande",   venue:"Kansas City"},
-  {id:36,g:"F",date:"2026-06-26",time:"01:00",home:"Japan",          away:"Schweden",      venue:"Dallas"},
-  {id:23,g:"D",date:"2026-06-26",time:"04:00",home:"Türkei",         away:"USA",           venue:"Los Angeles"},
-  {id:24,g:"D",date:"2026-06-26",time:"04:00",home:"Paraguay",       away:"Australien",    venue:"San Francisco"},
-  {id:53,g:"I",date:"2026-06-26",time:"21:00",home:"Norwegen",       away:"Frankreich",    venue:"Boston"},
-  {id:54,g:"I",date:"2026-06-26",time:"21:00",home:"Senegal",        away:"Irak",          venue:"Toronto"},
-  {id:47,g:"H",date:"2026-06-27",time:"02:00",home:"Uruguay",        away:"Spanien",       venue:"Guadalajara"},
-  {id:48,g:"H",date:"2026-06-27",time:"02:00",home:"Kap Verde",      away:"Saudi-Arabien", venue:"Houston"},
-  {id:41,g:"G",date:"2026-06-27",time:"05:00",home:"Neuseeland",     away:"Belgien",       venue:"Vancouver"},
-  {id:42,g:"G",date:"2026-06-27",time:"05:00",home:"Ägypten",        away:"Iran",          venue:"Seattle"},
-  {id:71,g:"L",date:"2026-06-27",time:"23:00",home:"Panama",         away:"England",       venue:"New Jersey"},
-  {id:72,g:"L",date:"2026-06-27",time:"23:00",home:"Kroatien",       away:"Ghana",         venue:"Philadelphia"},
-  {id:65,g:"K",date:"2026-06-28",time:"01:30",home:"Kolumbien",      away:"Portugal",      venue:"Miami"},
-  {id:66,g:"K",date:"2026-06-28",time:"01:30",home:"DR Kongo",       away:"Usbekistan",    venue:"Atlanta"},
-  {id:59,g:"J",date:"2026-06-28",time:"04:00",home:"Jordanien",      away:"Argentinien",   venue:"Dallas"},
-  {id:60,g:"J",date:"2026-06-28",time:"04:00",home:"Algerien",       away:"Österreich",    venue:"Kansas City"},
+const GAMES=[
+  {id:1,g:"A",date:"2026-06-11",time:"21:00",home:"Mexiko",away:"Südafrika",venue:"Mexiko-Stadt"},
+  {id:2,g:"A",date:"2026-06-12",time:"04:00",home:"Südkorea",away:"Tschechien",venue:"Guadalajara"},
+  {id:7,g:"B",date:"2026-06-12",time:"21:00",home:"Kanada",away:"Bosnien",venue:"Toronto"},
+  {id:19,g:"D",date:"2026-06-13",time:"03:00",home:"USA",away:"Paraguay",venue:"Los Angeles"},
+  {id:8,g:"B",date:"2026-06-13",time:"21:00",home:"Katar",away:"Schweiz",venue:"San Francisco"},
+  {id:13,g:"C",date:"2026-06-14",time:"00:00",home:"Brasilien",away:"Marokko",venue:"New Jersey"},
+  {id:14,g:"C",date:"2026-06-14",time:"03:00",home:"Haiti",away:"Schottland",venue:"Boston"},
+  {id:20,g:"D",date:"2026-06-14",time:"06:00",home:"Australien",away:"Türkei",venue:"Vancouver"},
+  {id:25,g:"E",date:"2026-06-14",time:"19:00",home:"Deutschland",away:"Curaçao",venue:"Houston"},
+  {id:31,g:"F",date:"2026-06-14",time:"22:00",home:"Niederlande",away:"Japan",venue:"Dallas"},
+  {id:26,g:"E",date:"2026-06-15",time:"01:00",home:"Elfenbeinküste",away:"Ecuador",venue:"Philadelphia"},
+  {id:32,g:"F",date:"2026-06-15",time:"04:00",home:"Schweden",away:"Tunesien",venue:"Monterrey"},
+  {id:43,g:"H",date:"2026-06-15",time:"18:00",home:"Spanien",away:"Kap Verde",venue:"Atlanta"},
+  {id:37,g:"G",date:"2026-06-15",time:"21:00",home:"Belgien",away:"Ägypten",venue:"Seattle"},
+  {id:44,g:"H",date:"2026-06-16",time:"00:00",home:"Saudi-Arabien",away:"Uruguay",venue:"Miami"},
+  {id:38,g:"G",date:"2026-06-16",time:"03:00",home:"Iran",away:"Neuseeland",venue:"Los Angeles"},
+  {id:49,g:"I",date:"2026-06-16",time:"21:00",home:"Frankreich",away:"Senegal",venue:"New Jersey"},
+  {id:50,g:"I",date:"2026-06-17",time:"00:00",home:"Irak",away:"Norwegen",venue:"Boston"},
+  {id:55,g:"J",date:"2026-06-17",time:"03:00",home:"Argentinien",away:"Algerien",venue:"Kansas City"},
+  {id:56,g:"J",date:"2026-06-17",time:"06:00",home:"Österreich",away:"Jordanien",venue:"San Francisco"},
+  {id:61,g:"K",date:"2026-06-17",time:"19:00",home:"Portugal",away:"DR Kongo",venue:"Houston"},
+  {id:67,g:"L",date:"2026-06-17",time:"22:00",home:"England",away:"Kroatien",venue:"Dallas"},
+  {id:68,g:"L",date:"2026-06-18",time:"01:00",home:"Ghana",away:"Panama",venue:"Toronto"},
+  {id:62,g:"K",date:"2026-06-18",time:"04:00",home:"Usbekistan",away:"Kolumbien",venue:"Mexiko-Stadt"},
+  {id:3,g:"A",date:"2026-06-18",time:"18:00",home:"Tschechien",away:"Südafrika",venue:"Atlanta"},
+  {id:9,g:"B",date:"2026-06-18",time:"21:00",home:"Schweiz",away:"Bosnien",venue:"Los Angeles"},
+  {id:10,g:"B",date:"2026-06-19",time:"00:00",home:"Kanada",away:"Katar",venue:"Vancouver"},
+  {id:4,g:"A",date:"2026-06-19",time:"01:00",home:"Mexiko",away:"Südkorea",venue:"Guadalajara"},
+  {id:21,g:"D",date:"2026-06-19",time:"06:00",home:"Türkei",away:"Paraguay",venue:"San Francisco"},
+  {id:22,g:"D",date:"2026-06-19",time:"21:00",home:"USA",away:"Australien",venue:"Seattle"},
+  {id:15,g:"C",date:"2026-06-20",time:"00:00",home:"Schottland",away:"Marokko",venue:"Boston"},
+  {id:16,g:"C",date:"2026-06-20",time:"03:00",home:"Brasilien",away:"Haiti",venue:"Philadelphia"},
+  {id:33,g:"F",date:"2026-06-20",time:"19:00",home:"Niederlande",away:"Schweden",venue:"Houston"},
+  {id:27,g:"E",date:"2026-06-20",time:"22:00",home:"Deutschland",away:"Elfenbeinküste",venue:"Toronto"},
+  {id:28,g:"E",date:"2026-06-21",time:"02:00",home:"Ecuador",away:"Curaçao",venue:"Kansas City"},
+  {id:34,g:"F",date:"2026-06-21",time:"06:00",home:"Tunesien",away:"Japan",venue:"Monterrey"},
+  {id:45,g:"H",date:"2026-06-21",time:"18:00",home:"Spanien",away:"Saudi-Arabien",venue:"Atlanta"},
+  {id:39,g:"G",date:"2026-06-21",time:"21:00",home:"Belgien",away:"Iran",venue:"Los Angeles"},
+  {id:46,g:"H",date:"2026-06-22",time:"00:00",home:"Uruguay",away:"Kap Verde",venue:"Miami"},
+  {id:40,g:"G",date:"2026-06-22",time:"03:00",home:"Neuseeland",away:"Ägypten",venue:"Vancouver"},
+  {id:57,g:"J",date:"2026-06-22",time:"19:00",home:"Argentinien",away:"Österreich",venue:"Dallas"},
+  {id:51,g:"I",date:"2026-06-22",time:"23:00",home:"Frankreich",away:"Irak",venue:"Philadelphia"},
+  {id:52,g:"I",date:"2026-06-23",time:"02:00",home:"Norwegen",away:"Senegal",venue:"New Jersey"},
+  {id:58,g:"J",date:"2026-06-23",time:"03:00",home:"Jordanien",away:"Algerien",venue:"San Francisco"},
+  {id:63,g:"K",date:"2026-06-23",time:"19:00",home:"Portugal",away:"Usbekistan",venue:"Houston"},
+  {id:69,g:"L",date:"2026-06-23",time:"22:00",home:"England",away:"Ghana",venue:"Boston"},
+  {id:70,g:"L",date:"2026-06-24",time:"01:00",home:"Panama",away:"Kroatien",venue:"Toronto"},
+  {id:64,g:"K",date:"2026-06-24",time:"03:00",home:"Kolumbien",away:"DR Kongo",venue:"Guadalajara"},
+  {id:11,g:"B",date:"2026-06-24",time:"21:00",home:"Schweiz",away:"Kanada",venue:"Vancouver"},
+  {id:12,g:"B",date:"2026-06-24",time:"21:00",home:"Bosnien",away:"Katar",venue:"Seattle"},
+  {id:17,g:"C",date:"2026-06-25",time:"00:00",home:"Schottland",away:"Brasilien",venue:"Miami"},
+  {id:18,g:"C",date:"2026-06-25",time:"00:00",home:"Marokko",away:"Haiti",venue:"Atlanta"},
+  {id:5,g:"A",date:"2026-06-25",time:"03:00",home:"Tschechien",away:"Mexiko",venue:"Mexiko-Stadt"},
+  {id:6,g:"A",date:"2026-06-25",time:"03:00",home:"Südafrika",away:"Südkorea",venue:"Monterrey"},
+  {id:29,g:"E",date:"2026-06-25",time:"22:00",home:"Ecuador",away:"Deutschland",venue:"New Jersey"},
+  {id:30,g:"E",date:"2026-06-25",time:"22:00",home:"Curaçao",away:"Elfenbeinküste",venue:"Philadelphia"},
+  {id:35,g:"F",date:"2026-06-26",time:"01:00",home:"Tunesien",away:"Niederlande",venue:"Kansas City"},
+  {id:36,g:"F",date:"2026-06-26",time:"01:00",home:"Japan",away:"Schweden",venue:"Dallas"},
+  {id:23,g:"D",date:"2026-06-26",time:"04:00",home:"Türkei",away:"USA",venue:"Los Angeles"},
+  {id:24,g:"D",date:"2026-06-26",time:"04:00",home:"Paraguay",away:"Australien",venue:"San Francisco"},
+  {id:53,g:"I",date:"2026-06-26",time:"21:00",home:"Norwegen",away:"Frankreich",venue:"Boston"},
+  {id:54,g:"I",date:"2026-06-26",time:"21:00",home:"Senegal",away:"Irak",venue:"Toronto"},
+  {id:47,g:"H",date:"2026-06-27",time:"02:00",home:"Uruguay",away:"Spanien",venue:"Guadalajara"},
+  {id:48,g:"H",date:"2026-06-27",time:"02:00",home:"Kap Verde",away:"Saudi-Arabien",venue:"Houston"},
+  {id:41,g:"G",date:"2026-06-27",time:"05:00",home:"Neuseeland",away:"Belgien",venue:"Vancouver"},
+  {id:42,g:"G",date:"2026-06-27",time:"05:00",home:"Ägypten",away:"Iran",venue:"Seattle"},
+  {id:71,g:"L",date:"2026-06-27",time:"23:00",home:"Panama",away:"England",venue:"New Jersey"},
+  {id:72,g:"L",date:"2026-06-27",time:"23:00",home:"Kroatien",away:"Ghana",venue:"Philadelphia"},
+  {id:65,g:"K",date:"2026-06-28",time:"01:30",home:"Kolumbien",away:"Portugal",venue:"Miami"},
+  {id:66,g:"K",date:"2026-06-28",time:"01:30",home:"DR Kongo",away:"Usbekistan",venue:"Atlanta"},
+  {id:59,g:"J",date:"2026-06-28",time:"04:00",home:"Jordanien",away:"Argentinien",venue:"Dallas"},
+  {id:60,g:"J",date:"2026-06-28",time:"04:00",home:"Algerien",away:"Österreich",venue:"Kansas City"},
 ];
 
-const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
-const GROUP_TEAMS = {
-  A:["Mexiko","Südkorea","Tschechien","Südafrika"],
-  B:["Kanada","Katar","Schweiz","Bosnien"],
-  C:["Brasilien","Haiti","Schottland","Marokko"],
-  D:["USA","Australien","Türkei","Paraguay"],
-  E:["Deutschland","Curaçao","Elfenbeinküste","Ecuador"],
-  F:["Niederlande","Japan","Schweden","Tunesien"],
-  G:["Belgien","Ägypten","Iran","Neuseeland"],
-  H:["Spanien","Kap Verde","Saudi-Arabien","Uruguay"],
-  I:["Frankreich","Senegal","Irak","Norwegen"],
-  J:["Argentinien","Algerien","Österreich","Jordanien"],
-  K:["Portugal","DR Kongo","Usbekistan","Kolumbien"],
-  L:["England","Kroatien","Ghana","Panama"],
+const GROUPS=["A","B","C","D","E","F","G","H","I","J","K","L"];
+const GROUP_TEAMS={
+  A:["Mexiko","Südkorea","Tschechien","Südafrika"],B:["Kanada","Katar","Schweiz","Bosnien"],
+  C:["Brasilien","Haiti","Schottland","Marokko"],D:["USA","Australien","Türkei","Paraguay"],
+  E:["Deutschland","Curaçao","Elfenbeinküste","Ecuador"],F:["Niederlande","Japan","Schweden","Tunesien"],
+  G:["Belgien","Ägypten","Iran","Neuseeland"],H:["Spanien","Kap Verde","Saudi-Arabien","Uruguay"],
+  I:["Frankreich","Senegal","Irak","Norwegen"],J:["Argentinien","Algerien","Österreich","Jordanien"],
+  K:["Portugal","DR Kongo","Usbekistan","Kolumbien"],L:["England","Kroatien","Ghana","Panama"]
 };
-const FLAGS = {
-  "Mexiko":"🇲🇽","Südafrika":"🇿🇦","Südkorea":"🇰🇷","Tschechien":"🇨🇿","Kanada":"🇨🇦","Bosnien":"🇧🇦",
-  "Katar":"🇶🇦","Schweiz":"🇨🇭","Brasilien":"🇧🇷","Marokko":"🇲🇦","Haiti":"🇭🇹","Schottland":"🏴",
-  "USA":"🇺🇸","Paraguay":"🇵🇾","Australien":"🇦🇺","Türkei":"🇹🇷","Deutschland":"🇩🇪","Curaçao":"🇨🇼",
-  "Elfenbeinküste":"🇨🇮","Ecuador":"🇪🇨","Niederlande":"🇳🇱","Japan":"🇯🇵","Schweden":"🇸🇪","Tunesien":"🇹🇳",
-  "Belgien":"🇧🇪","Ägypten":"🇪🇬","Iran":"🇮🇷","Neuseeland":"🇳🇿","Spanien":"🇪🇸","Kap Verde":"🇨🇻",
-  "Saudi-Arabien":"🇸🇦","Uruguay":"🇺🇾","Frankreich":"🇫🇷","Senegal":"🇸🇳","Irak":"🇮🇶","Norwegen":"🇳🇴",
-  "Argentinien":"🇦🇷","Algerien":"🇩🇿","Österreich":"🇦🇹","Jordanien":"🇯🇴","Portugal":"🇵🇹","DR Kongo":"🇨🇩",
-  "Usbekistan":"🇺🇿","Kolumbien":"🇨🇴","England":"🏴","Kroatien":"🇭🇷","Ghana":"🇬🇭","Panama":"🇵🇦",
-};
+const FLAGS={"Mexiko":"MX","Südafrika":"ZA","Südkorea":"KR","Tschechien":"CZ","Kanada":"CA","Bosnien":"BA","Katar":"QA","Schweiz":"CH","Brasilien":"BR","Marokko":"MA","Haiti":"HT","Schottland":"SCO","USA":"US","Paraguay":"PY","Australien":"AU","Türkei":"TR","Deutschland":"DE","Curaçao":"CW","Elfenbeinküste":"CI","Ecuador":"EC","Niederlande":"NL","Japan":"JP","Schweden":"SE","Tunesien":"TN","Belgien":"BE","Ägypten":"EG","Iran":"IR","Neuseeland":"NZ","Spanien":"ES","Kap Verde":"CV","Saudi-Arabien":"SA","Uruguay":"UY","Frankreich":"FR","Senegal":"SN","Irak":"IQ","Norwegen":"NO","Argentinien":"AR","Algerien":"DZ","Österreich":"AT","Jordanien":"JO","Portugal":"PT","DR Kongo":"CD","Usbekistan":"UZ","Kolumbien":"CO","England":"ENG","Kroatien":"HR","Ghana":"GH","Panama":"PA"};
 
-const BRACKET_R32 = [
-  {id:"r32_1", date:"2026-06-29",time:"19:00",t1:"1A",t2:"3?",venue:"Boston"},
-  {id:"r32_2", date:"2026-06-29",time:"22:00",t1:"1B",t2:"3?",venue:"Vancouver"},
-  {id:"r32_3", date:"2026-06-30",time:"19:00",t1:"2I",t2:"2J",venue:"Dallas"},
-  {id:"r32_4", date:"2026-06-30",time:"22:30",t1:"1E",t2:"3?",venue:"Boston"},
-  {id:"r32_5", date:"2026-07-01",time:"19:00",t1:"1F",t2:"3?",venue:"Seattle"},
-  {id:"r32_6", date:"2026-07-01",time:"22:30",t1:"1D",t2:"3?",venue:"Los Angeles"},
-  {id:"r32_7", date:"2026-07-02",time:"19:00",t1:"1K",t2:"3?",venue:"Houston"},
-  {id:"r32_8", date:"2026-07-02",time:"22:00",t1:"1G",t2:"3?",venue:"Atlanta"},
-  {id:"r32_9", date:"2026-07-03",time:"19:00",t1:"1C",t2:"3?",venue:"Miami"},
-  {id:"r32_10",date:"2026-07-03",time:"22:00",t1:"2K",t2:"2L",venue:"Kansas City"},
-  {id:"r32_11",date:"2026-07-04",time:"19:00",t1:"2D",t2:"2E",venue:"Philadelphia"},
-  {id:"r32_12",date:"2026-07-04",time:"22:30",t1:"1H",t2:"3?",venue:"New Jersey"},
-  {id:"r32_13",date:"2026-07-05",time:"19:00",t1:"1L",t2:"3?",venue:"Dallas"},
-  {id:"r32_14",date:"2026-07-05",time:"22:30",t1:"2F",t2:"2G",venue:"Toronto"},
-  {id:"r32_15",date:"2026-07-06",time:"19:00",t1:"2A",t2:"2B",venue:"Guadalajara"},
-  {id:"r32_16",date:"2026-07-06",time:"22:30",t1:"2C",t2:"2H",venue:"Monterrey"},
-];
-const BRACKET_R16 = [
-  {id:"r16_1",t1:"S(r32_1)", t2:"S(r32_2)", date:"2026-07-09",time:"19:00",venue:"Los Angeles"},
-  {id:"r16_2",t1:"S(r32_3)", t2:"S(r32_4)", date:"2026-07-09",time:"22:00",venue:"New Jersey"},
-  {id:"r16_3",t1:"S(r32_5)", t2:"S(r32_6)", date:"2026-07-10",time:"19:00",venue:"Houston"},
-  {id:"r16_4",t1:"S(r32_7)", t2:"S(r32_8)", date:"2026-07-10",time:"22:00",venue:"Miami"},
-  {id:"r16_5",t1:"S(r32_9)", t2:"S(r32_10)",date:"2026-07-11",time:"19:00",venue:"Seattle"},
-  {id:"r16_6",t1:"S(r32_11)",t2:"S(r32_12)",date:"2026-07-11",time:"22:00",venue:"Dallas"},
-  {id:"r16_7",t1:"S(r32_13)",t2:"S(r32_14)",date:"2026-07-12",time:"19:00",venue:"Kansas City"},
-  {id:"r16_8",t1:"S(r32_15)",t2:"S(r32_16)",date:"2026-07-12",time:"22:00",venue:"Atlanta"},
-];
-const BRACKET_QF = [
-  {id:"qf_1",t1:"S(r16_1)",t2:"S(r16_2)",date:"2026-07-15",time:"22:00",venue:"New Jersey"},
-  {id:"qf_2",t1:"S(r16_3)",t2:"S(r16_4)",date:"2026-07-15",time:"19:00",venue:"Los Angeles"},
-  {id:"qf_3",t1:"S(r16_5)",t2:"S(r16_6)",date:"2026-07-16",time:"19:00",venue:"Dallas"},
-  {id:"qf_4",t1:"S(r16_7)",t2:"S(r16_8)",date:"2026-07-16",time:"22:00",venue:"Miami"},
-];
-const BRACKET_SF    = [
-  {id:"sf_1",t1:"S(qf_1)",t2:"S(qf_2)",date:"2026-07-19",time:"21:00",venue:"New Jersey"},
-  {id:"sf_2",t1:"S(qf_3)",t2:"S(qf_4)",date:"2026-07-20",time:"21:00",venue:"Dallas"},
-];
-const BRACKET_3RD   = {id:"p3",   t1:"L(sf_1)",t2:"L(sf_2)",date:"2026-07-18",time:"21:00",venue:"Miami"};
-const BRACKET_FINAL = {id:"final",t1:"S(sf_1)",t2:"S(sf_2)",date:"2026-07-19",time:"21:00",venue:"New York/NJ"};
+const canTip=(d,t)=>Date.now()<new Date(d+"T"+t+":00").getTime()-5*60*1000;
+const isStarted=(d,t)=>Date.now()>=new Date(d+"T"+t+":00").getTime();
+const fmtDate=d=>new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
 
-const canTip    = (d,t) => Date.now() < new Date(d+"T"+t+":00").getTime() - 5*60*1000;
-const isStarted = (d,t) => Date.now() >= new Date(d+"T"+t+":00").getTime();
-const isFinished= (d,t) => Date.now() >= new Date(d+"T"+t+":00").getTime() + 110*60*1000;
-const fmtDate   = d => new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
-
-function calcPoints(tip,res) {
-  if (!tip||!res) return 0;
+function calcPoints(tip,res){
+  if(!tip||!res)return 0;
   const tH=tip.home,tA=tip.away,rH=res.home,rA=res.away;
-  if (tH===rH&&tA===rA) return 5;
+  if(tH===rH&&tA===rA)return 5;
   const tD=tH-tA,rD=rH-rA;
-  if (!((tD>0&&rD>0)||(tD<0&&rD<0)||(tD===0&&rD===0))) return 0;
-  return tD===rD ? 3 : 2;
+  if(!((tD>0&&rD>0)||(tD<0&&rD<0)||(tD===0&&rD===0)))return 0;
+  return tD===rD?3:2;
 }
-
-function calcTable(grp, results) {
-  const s = Object.fromEntries(GROUP_TEAMS[grp].map(t=>[t,{sp:0,g:0,u:0,v:0,tf:0,ta:0,pts:0}]));
+function calcTable(grp,results){
+  const s=Object.fromEntries(GROUP_TEAMS[grp].map(t=>[t,{sp:0,g:0,u:0,v:0,tf:0,ta:0,pts:0}]));
   GAMES.filter(x=>x.g===grp).forEach(x=>{
-    const r=results[x.id]; if(!r) return;
-    s[x.home].sp++; s[x.away].sp++;
-    s[x.home].tf+=r.home; s[x.home].ta+=r.away;
-    s[x.away].tf+=r.away; s[x.away].ta+=r.home;
-    if (r.home>r.away){s[x.home].g++;s[x.home].pts+=3;s[x.away].v++;}
-    else if (r.home<r.away){s[x.away].g++;s[x.away].pts+=3;s[x.home].v++;}
+    const r=results[x.id];if(!r)return;
+    s[x.home].sp++;s[x.away].sp++;
+    s[x.home].tf+=r.home;s[x.home].ta+=r.away;
+    s[x.away].tf+=r.away;s[x.away].ta+=r.home;
+    if(r.home>r.away){s[x.home].g++;s[x.home].pts+=3;s[x.away].v++;}
+    else if(r.home<r.away){s[x.away].g++;s[x.away].pts+=3;s[x.home].v++;}
     else{s[x.home].u++;s[x.away].u++;s[x.home].pts++;s[x.away].pts++;}
   });
-  return Object.entries(s).map(([n,v])=>({n,...v,td:v.tf-v.ta}))
-    .sort((a,b)=>b.pts-a.pts||b.td-a.td||b.tf-a.tf);
+  return Object.entries(s).map(([n,v])=>({n,...v,td:v.tf-v.ta})).sort((a,b)=>b.pts-a.pts||b.td-a.td||b.tf-a.tf);
+}
+const ls={get:k=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch{return null;}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
+
+function Flag({team}){
+  return <span style={{fontSize:"0.7rem",background:"#e2e8f0",borderRadius:3,padding:"1px 4px",fontWeight:700,flexShrink:0}}>{FLAGS[team]||"?"}</span>;
 }
 
-const ls = {
-  get: k => { try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch{return null;} },
-  set: (k,v) => { try{localStorage.setItem(k,JSON.stringify(v));}catch{} },
-};
-
-function TipModal({game,onClose,onSave,existing}) {
-  const [h,setH] = useState(existing!=null?String(existing.home):"");
-  const [a,setA] = useState(existing!=null?String(existing.away):"");
-  const inp = {width:54,textAlign:"center",background:"#fff",border:"2px solid #3b82f6",borderRadius:8,color:"#1e3a5f",fontSize:"1.4rem",fontWeight:700,padding:"6px",outline:"none"};
-  return (
+function TipModal({game,onClose,onSave,existing}){
+  const[h,setH]=useState(existing!=null?String(existing.home):"");
+  const[a,setA]=useState(existing!=null?String(existing.away):"");
+  const inp={width:54,textAlign:"center",background:"#fff",border:"2px solid #3b82f6",borderRadius:8,color:"#1e3a5f",fontSize:"1.4rem",fontWeight:700,padding:"6px",outline:"none"};
+  return(
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,39,68,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,padding:16}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:14,padding:"22px 26px",width:"100%",maxWidth:330,boxShadow:"0 20px 60px rgba(30,58,95,0.2)"}}>
+      <div onClick={function(e){e.stopPropagation();}} style={{background:"#fff",borderRadius:14,padding:"22px 26px",width:"100%",maxWidth:330,boxShadow:"0 20px 60px rgba(30,58,95,0.2)"}}>
         <div style={{fontSize:"0.72rem",color:"#64748b",marginBottom:6}}>{fmtDate(game.date)} · {game.time} · {game.venue}</div>
-        <div style={{fontSize:"1rem",fontWeight:700,marginBottom:16,color:"#1e3a5f"}}>{FLAGS[game.home]||"🏳️"} {game.home} <span style={{color:"#3b82f6",margin:"0 5px"}}>vs</span> {game.away} {FLAGS[game.away]||"🏳️"}</div>
+        <div style={{fontSize:"1rem",fontWeight:700,marginBottom:16,color:"#1e3a5f"}}>{game.home} <span style={{color:"#3b82f6",margin:"0 6px"}}>vs</span> {game.away}</div>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,justifyContent:"center"}}>
-          <input type="number" min="0" max="20" value={h} onChange={e=>setH(e.target.value)} style={inp} placeholder="–"/>
+          <input type="number" min="0" max="20" value={h} onChange={function(e){setH(e.target.value);}} style={inp} placeholder="-"/>
           <span style={{color:"#94a3b8",fontWeight:800,fontSize:"1.2rem"}}>:</span>
-          <input type="number" min="0" max="20" value={a} onChange={e=>setA(e.target.value)} style={inp} placeholder="–"/>
+          <input type="number" min="0" max="20" value={a} onChange={function(e){setA(e.target.value);}} style={inp} placeholder="-"/>
         </div>
         <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
           <button onClick={onClose} style={{background:"#f1f5f9",border:"none",color:"#64748b",padding:"8px 14px",borderRadius:8,cursor:"pointer",fontSize:"0.85rem"}}>Abbrechen</button>
-          <button onClick={()=>{if(h!==""&&a!=="")onSave({home:parseInt(h),away:parseInt(a)});}} style={{background:"#2563eb",border:"none",color:"#fff",padding:"8px 14px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:"0.85rem"}}>Speichern</button>
+          <button onClick={function(){if(h!==""&&a!=="")onSave({home:parseInt(h),away:parseInt(a)});}} style={{background:"#2563eb",border:"none",color:"#fff",padding:"8px 14px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:"0.85rem"}}>Speichern</button>
         </div>
       </div>
     </div>
   );
 }
 
-function GameCard({game,myTip,results,onTip,currentUser}) {
+function GameCard({game,myTip,results,onTip,currentUser}){
   const r=results[game.id];
   const allowed=canTip(game.date,game.time);
   const started=isStarted(game.date,game.time);
@@ -207,18 +169,18 @@ function GameCard({game,myTip,results,onTip,currentUser}) {
   const pts=myTip&&r?calcPoints(myTip,r):null;
   const pc=pts>=5?"#166534":pts>=3?"#854d0e":pts>=2?"#9a3412":"#64748b";
   const pb=pts>=5?"#dcfce7":pts>=3?"#fef9c3":pts>=2?"#fff7ed":"#f1f5f9";
-  return (
+  return(
     <div style={{background:"#fff",border:isDE?"1.5px solid #3b82f6":"1px solid #e2e8f0",borderRadius:10,padding:"10px 12px",boxShadow:"0 1px 3px rgba(30,58,95,0.06)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:4}}>
         <div style={{display:"flex",gap:4}}>
           <span style={{background:"#dbeafe",color:"#1d4ed8",fontSize:"0.6rem",padding:"1px 6px",borderRadius:99,fontWeight:700}}>Gr. {game.g}</span>
-          {isDE&&<span style={{background:"#2563eb",color:"#fff",fontSize:"0.6rem",padding:"1px 6px",borderRadius:99,fontWeight:700}}>🇩🇪 DFB</span>}
+          {isDE && <span style={{background:"#2563eb",color:"#fff",fontSize:"0.6rem",padding:"1px 6px",borderRadius:99,fontWeight:700}}>DFB</span>}
         </div>
         <span style={{fontSize:"0.65rem",color:"#94a3b8"}}>{game.venue}</span>
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4}}>
         <div style={{flex:1,display:"flex",alignItems:"center",gap:6,minWidth:0}}>
-          <span style={{fontSize:"1.15rem",flexShrink:0}}>{FLAGS[game.home]||"🏳️"}</span>
+          <Flag team={game.home}/>
           <span style={{fontWeight:600,color:"#1e3a5f",fontSize:"0.82rem",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{game.home}</span>
         </div>
         <div style={{textAlign:"center",minWidth:76,flexShrink:0}}>
@@ -228,230 +190,152 @@ function GameCard({game,myTip,results,onTip,currentUser}) {
         </div>
         <div style={{flex:1,display:"flex",alignItems:"center",gap:6,justifyContent:"flex-end",minWidth:0}}>
           <span style={{fontWeight:600,color:"#1e3a5f",fontSize:"0.82rem",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textAlign:"right"}}>{game.away}</span>
-          <span style={{fontSize:"1.15rem",flexShrink:0}}>{FLAGS[game.away]||"🏳️"}</span>
+          <Flag team={game.away}/>
         </div>
       </div>
       <div style={{borderTop:"1px solid #f1f5f9",marginTop:8,paddingTop:6,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:5}}>
         <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
-          {myTip&&<span style={{fontSize:"0.7rem",background:"#eff6ff",color:"#2563eb",padding:"2px 7px",borderRadius:99,border:"1px solid #bfdbfe"}}>Tipp: {myTip.home}:{myTip.away}</span>}
-          {pts!==null&&<span style={{fontSize:"0.7rem",fontWeight:700,background:pb,color:pc,padding:"2px 7px",borderRadius:99}}>{pts} Pkt</span>}
+          {myTip && <span style={{fontSize:"0.7rem",background:"#eff6ff",color:"#2563eb",padding:"2px 7px",borderRadius:99,border:"1px solid #bfdbfe"}}>Tipp: {myTip.home}:{myTip.away}</span>}
+          {pts!==null && <span style={{fontSize:"0.7rem",fontWeight:700,background:pb,color:pc,padding:"2px 7px",borderRadius:99}}>{pts} Pkt</span>}
         </div>
         {currentUser && (allowed
           ? <button onClick={onTip} style={{background:"#2563eb",border:"none",color:"#fff",padding:"4px 12px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem",fontWeight:700}}>{myTip?"Ändern":"Tipp"}</button>
-          : started ? <span style={{fontSize:"0.65rem",color:"#94a3b8"}}>Läuft/Beendet</span>
-                    : <span style={{fontSize:"0.65rem",color:"#ef4444",fontWeight:600}}>⏸ Gesperrt</span>
+          : started ? <span style={{fontSize:"0.65rem",color:"#94a3b8"}}>Beendet</span>
+                    : <span style={{fontSize:"0.65rem",color:"#ef4444",fontWeight:600}}>Gesperrt</span>
         )}
       </div>
     </div>
   );
 }
 
-function GroupTable({grp,results}) {
+function GroupTable({grp,results}){
   const rows=calcTable(grp,results);
   const th={fontSize:"0.62rem",color:"#64748b",fontWeight:600,padding:"4px 5px",textAlign:"center"};
-  const td={fontSize:"0.72rem",padding:"5px 5px",textAlign:"center",color:"#1e3a5f"};
-  return (
+  const td={fontSize:"0.72rem",padding:"5px",textAlign:"center",color:"#1e3a5f"};
+  return(
     <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:10,overflow:"hidden"}}>
       <div style={{background:"#1e3a5f",padding:"7px 12px",color:"#fff",fontSize:"0.78rem",fontWeight:700}}>Gruppe {grp}</div>
       <div style={{overflowX:"auto"}}>
-        <table style={{width:"100%",borderCollapse:"collapse",minWidth:300}}>
+        <table style={{width:"100%",borderCollapse:"collapse",minWidth:280}}>
           <thead><tr style={{background:"#f8fafc"}}>
-            <th style={{...th,textAlign:"left",paddingLeft:10}}>#</th>
-            <th style={{...th,textAlign:"left"}}>Team</th>
+            <th style={Object.assign({},th,{textAlign:"left",paddingLeft:10})}>#</th>
+            <th style={Object.assign({},th,{textAlign:"left"})}>Team</th>
             <th style={th}>Sp</th><th style={th}>S</th><th style={th}>U</th><th style={th}>N</th>
             <th style={th}>Tore</th><th style={th}>TD</th>
-            <th style={{...th,fontWeight:700,color:"#1d4ed8"}}>Pkt</th>
+            <th style={Object.assign({},th,{fontWeight:700,color:"#1d4ed8"})}>Pkt</th>
           </tr></thead>
-          <tbody>{rows.map((r,i)=>(
+          <tbody>{rows.map(function(r,i){return(
             <tr key={r.n} style={{borderTop:"1px solid #f1f5f9",background:i<2?"#f0f9ff":"#fff"}}>
-              <td style={{...td,paddingLeft:10,color:"#94a3b8",fontWeight:600}}>{i+1}</td>
-              <td style={{...td,textAlign:"left",fontWeight:i<2?700:400,whiteSpace:"nowrap"}}><span style={{marginRight:4}}>{FLAGS[r.n]||"🏳️"}</span>{r.n}</td>
+              <td style={Object.assign({},td,{paddingLeft:10,color:"#94a3b8",fontWeight:600})}>{i+1}</td>
+              <td style={Object.assign({},td,{textAlign:"left",fontWeight:i<2?700:400,whiteSpace:"nowrap"})}>{r.n}</td>
               <td style={td}>{r.sp}</td><td style={td}>{r.g}</td><td style={td}>{r.u}</td><td style={td}>{r.v}</td>
               <td style={td}>{r.tf}:{r.ta}</td>
-              <td style={{...td,color:r.td>0?"#16a34a":r.td<0?"#dc2626":"#64748b"}}>{r.td>0?"+":""}{r.td}</td>
-              <td style={{...td,fontWeight:700,color:"#2563eb"}}>{r.pts}</td>
+              <td style={Object.assign({},td,{color:r.td>0?"#16a34a":r.td<0?"#dc2626":"#64748b"})}>{r.td>0?"+":""}{r.td}</td>
+              <td style={Object.assign({},td,{fontWeight:700,color:"#2563eb"})}>{r.pts}</td>
             </tr>
-          ))}</tbody>
+          );})}
+          </tbody>
         </table>
       </div>
     </div>
   );
 }
 
-function Leaderboard({users,allTips,results}) {
-  const scored=users.map(u=>{
-    let pts=0,exact=0,tend=0;
-    GAMES.forEach(x=>{
-      const p=calcPoints(allTips[u.id]?.[x.id], results[x.id]);
-      pts+=p; if(p===5)exact++; else if(p>=2)tend++;
-    });
-    return {...u,pts,exact,tend};
-  }).sort((a,b)=>b.pts-a.pts||b.exact-a.exact);
-  if(!scored.length) return <div style={{textAlign:"center",color:"#94a3b8",padding:"28px 0",fontSize:"0.85rem"}}>Noch keine Teilnehmer.</div>;
-  const th={fontSize:"0.62rem",color:"#93c5fd",fontWeight:600,padding:"6px 8px",textAlign:"center"};
-  const td={fontSize:"0.78rem",padding:"7px 8px",textAlign:"center",color:"#1e3a5f"};
-  const medal=i=>i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1;
-  return (
+function Leaderboard({users,allTips,results}){
+  const scored=users.map(function(u){
+    var pts=0,exact=0,tend=0;
+    GAMES.forEach(function(x){var p=calcPoints(allTips[u.id]&&allTips[u.id][x.id],results[x.id]);pts+=p;if(p===5)exact++;else if(p>=2)tend++;});
+    return Object.assign({},u,{pts:pts,exact:exact,tend:tend});
+  }).sort(function(a,b){return b.pts-a.pts||b.exact-a.exact;});
+  if(!scored.length)return React.createElement("div",{style:{textAlign:"center",color:"#94a3b8",padding:"28px 0",fontSize:"0.85rem"}},"Noch keine Teilnehmer.");
+  return(
     <div style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:10,overflow:"hidden"}}>
       <table style={{width:"100%",borderCollapse:"collapse"}}>
         <thead><tr style={{background:"#1e3a5f"}}>
-          <th style={{...th,color:"#93c5fd",textAlign:"left",paddingLeft:12}}>#</th>
-          <th style={{...th,color:"#93c5fd",textAlign:"left"}}>Name</th>
-          <th style={th}>Exakt</th><th style={th}>Tendenz</th>
-          <th style={{...th,color:"#fff",fontWeight:700}}>Punkte</th>
+          <th style={{fontSize:"0.62rem",color:"#93c5fd",fontWeight:600,padding:"6px 8px",textAlign:"left",paddingLeft:12}}>#</th>
+          <th style={{fontSize:"0.62rem",color:"#93c5fd",fontWeight:600,padding:"6px 8px",textAlign:"left"}}>Name</th>
+          <th style={{fontSize:"0.62rem",color:"#93c5fd",fontWeight:600,padding:"6px 8px",textAlign:"center"}}>Exakt</th>
+          <th style={{fontSize:"0.62rem",color:"#93c5fd",fontWeight:600,padding:"6px 8px",textAlign:"center"}}>Tendenz</th>
+          <th style={{fontSize:"0.62rem",color:"#fff",fontWeight:700,padding:"6px 8px",textAlign:"center"}}>Punkte</th>
         </tr></thead>
-        <tbody>{scored.map((u,i)=>(
-          <tr key={u.id} style={{borderTop:"1px solid #f1f5f9",background:i===0?"#fefce8":i===1?"#f8fafc":i===2?"#fff7ed":"#fff"}}>
-            <td style={{...td,paddingLeft:12,fontWeight:700,color:i===0?"#d97706":i===1?"#64748b":i===2?"#b45309":"#94a3b8"}}>{medal(i)}</td>
-            <td style={{...td,textAlign:"left",fontWeight:600}}>{u.name}</td>
-            <td style={{...td,color:"#16a34a",fontWeight:600}}>{u.exact}x</td>
-            <td style={td}>{u.tend}x</td>
-            <td style={{...td,fontWeight:800,fontSize:"0.92rem",color:"#2563eb"}}>{u.pts}</td>
-          </tr>
-        ))}</tbody>
+        <tbody>{scored.map(function(u,i){
+          var medal=i===0?"1.":i===1?"2.":i===2?"3.":(i+1)+".";
+          return(
+            <tr key={u.id} style={{borderTop:"1px solid #f1f5f9",background:i===0?"#fefce8":i===1?"#f8fafc":i===2?"#fff7ed":"#fff"}}>
+              <td style={{fontSize:"0.78rem",padding:"7px 8px",paddingLeft:12,fontWeight:700,color:i===0?"#d97706":i===1?"#64748b":i===2?"#b45309":"#94a3b8"}}>{medal}</td>
+              <td style={{fontSize:"0.78rem",padding:"7px 8px",fontWeight:600,color:"#1e3a5f"}}>{u.name}</td>
+              <td style={{fontSize:"0.78rem",padding:"7px 8px",textAlign:"center",color:"#16a34a",fontWeight:600}}>{u.exact}x</td>
+              <td style={{fontSize:"0.78rem",padding:"7px 8px",textAlign:"center",color:"#1e3a5f"}}>{u.tend}x</td>
+              <td style={{fontSize:"0.92rem",padding:"7px 8px",textAlign:"center",fontWeight:800,color:"#2563eb"}}>{u.pts}</td>
+            </tr>
+          );
+        })}</tbody>
       </table>
     </div>
   );
 }
 
-function Register({onRegister}) {
-  const [name,setName]=useState("");
-  const [email,setEmail]=useState("");
-  const [err,setErr]=useState("");
+function Register({onRegister}){
+  const[name,setName]=useState("");
+  const[email,setEmail]=useState("");
+  const[err,setErr]=useState("");
   const inp={width:"100%",padding:"10px 12px",border:"1px solid #cbd5e1",borderRadius:8,fontSize:"0.88rem",color:"#1e3a5f",outline:"none"};
-  const go=()=>{
-    if(!name.trim()) return setErr("Bitte Namen eingeben.");
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr("Bitte gültige E-Mail eingeben.");
+  function go(){
+    if(!name.trim())return setErr("Bitte Namen eingeben.");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setErr("Bitte gültige E-Mail eingeben.");
     onRegister(name.trim(),email.trim());
-  };
-  return (
+  }
+  return(
     <div style={{background:"#fff",border:"1px solid #bfdbfe",borderRadius:14,padding:"22px",maxWidth:360,margin:"0 auto",boxShadow:"0 4px 20px rgba(30,58,95,0.1)"}}>
-      <h3 style={{margin:"0 0 4px",color:"#1e3a5f",fontSize:"1.05rem"}}>🏆 Kicktipp beitreten</h3>
-      <p style={{margin:"0 0 16px",fontSize:"0.78rem",color:"#64748b"}}>Name & E-Mail eintragen und mitspielen.</p>
+      <h3 style={{margin:"0 0 4px",color:"#1e3a5f",fontSize:"1.05rem"}}>Kicktipp beitreten</h3>
+      <p style={{margin:"0 0 16px",fontSize:"0.78rem",color:"#64748b"}}>Name und E-Mail eintragen und mitspielen.</p>
       <div style={{marginBottom:10}}>
         <label style={{fontSize:"0.75rem",color:"#64748b",display:"block",marginBottom:3}}>Name</label>
-        <input value={name} onChange={e=>{setName(e.target.value);setErr("");}} style={inp} placeholder="Max Mustermann"/>
+        <input value={name} onChange={function(e){setName(e.target.value);setErr("");}} style={inp} placeholder="Max Mustermann"/>
       </div>
       <div style={{marginBottom:14}}>
         <label style={{fontSize:"0.75rem",color:"#64748b",display:"block",marginBottom:3}}>E-Mail</label>
-        <input value={email} onChange={e=>{setEmail(e.target.value);setErr("");}} style={inp} placeholder="max@beispiel.de" type="email"/>
+        <input value={email} onChange={function(e){setEmail(e.target.value);setErr("");}} style={inp} placeholder="max@beispiel.de" type="email"/>
       </div>
-      {err&&<div style={{color:"#ef4444",fontSize:"0.75rem",marginBottom:8}}>{err}</div>}
-      <button onClick={go} style={{background:"#2563eb",border:"none",color:"#fff",padding:"10px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:"0.88rem",width:"100%"}}>Registrieren & mitspielen</button>
-      <p style={{margin:"8px 0 0",fontSize:"0.68rem",color:"#94a3b8",textAlign:"center"}}>Daten werden lokal gespeichert.</p>
+      {err && <div style={{color:"#ef4444",fontSize:"0.75rem",marginBottom:8}}>{err}</div>}
+      <button onClick={go} style={{background:"#2563eb",border:"none",color:"#fff",padding:"10px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:"0.88rem",width:"100%"}}>Registrieren</button>
+      <p style={{margin:"8px 0 0",fontSize:"0.68rem",color:"#94a3b8",textAlign:"center"}}>Daten werden lokal im Browser gespeichert.</p>
     </div>
   );
 }
 
-function BracketMatch({match,results,highlight}) {
-  const r=results[match.id];
-  return (
-    <div style={{background:highlight?"#eff6ff":"#fff",border:highlight?"1.5px solid #3b82f6":"1px solid #e2e8f0",borderRadius:8,padding:"6px 8px",minWidth:130,maxWidth:160,boxShadow:"0 1px 3px rgba(30,58,95,0.07)"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-        <span style={{fontSize:"0.72rem",fontWeight:600,color:"#1e3a5f",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{match.t1}</span>
-        <span style={{fontSize:"0.75rem",fontWeight:800,color:r?"#2563eb":"#cbd5e1",marginLeft:6,minWidth:16,textAlign:"right"}}>{r?r.home:"–"}</span>
-      </div>
-      <div style={{height:1,background:"#f1f5f9",margin:"2px 0"}}/>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:3}}>
-        <span style={{fontSize:"0.72rem",fontWeight:600,color:"#1e3a5f",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{match.t2}</span>
-        <span style={{fontSize:"0.75rem",fontWeight:800,color:r?"#2563eb":"#cbd5e1",marginLeft:6,minWidth:16,textAlign:"right"}}>{r?r.away:"–"}</span>
-      </div>
-      <div style={{marginTop:4,display:"flex",justifyContent:"space-between"}}>
-        <span style={{fontSize:"0.58rem",color:"#94a3b8"}}>{match.date?fmtDate(match.date):""} {match.time}</span>
-        <span style={{fontSize:"0.55rem",color:"#94a3b8",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:70}}>{match.venue}</span>
-      </div>
-    </div>
-  );
-}
-
-function TournamentBracket({results}) {
-  const col=(title,matches,color,pt)=>{
-    const bg = color+"22";
-    const brd = "1px solid "+color;
-    return (
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",minWidth:155}}>
-        <div style={{fontSize:"0.65rem",fontWeight:700,color:color,background:bg,padding:"3px 10px",borderRadius:99,marginBottom:10,whiteSpace:"nowrap",border:brd}}>{title}</div>
-        <div style={{display:"flex",flexDirection:"column",gap:8,width:"100%",paddingTop:pt||0}}>
-          {matches.map(m=><BracketMatch key={m.id} match={m} results={results} highlight={m.id==="final"}/>)}
-        </div>
-      </div>
-    );
-  };
-  const conn=(pt,color,pairs,gap)=>(
-    <div style={{display:"flex",alignItems:"flex-start",paddingTop:pt}}>
-      <svg width="20" style={{overflow:"visible",height:pairs*2*gap+20}}>
-        {Array.from({length:pairs},(_,i)=>(
-          <g key={i}>
-            <line x1="0" y1={36+i*2*gap} x2="10" y2={36+i*2*gap} stroke={color} strokeWidth="1.5"/>
-            <line x1="0" y1={36+gap+i*2*gap} x2="10" y2={36+gap+i*2*gap} stroke={color} strokeWidth="1.5"/>
-            <line x1="10" y1={36+i*2*gap} x2="10" y2={36+gap+i*2*gap} stroke={color} strokeWidth="1.5"/>
-            <line x1="10" y1={36+gap/2+i*2*gap} x2="20" y2={36+gap/2+i*2*gap} stroke={color} strokeWidth="1.5"/>
-          </g>
-        ))}
-      </svg>
-    </div>
-  );
-  return (
-    <div style={{overflowX:"auto",paddingBottom:16}}>
-      <div style={{display:"flex",gap:10,alignItems:"flex-start",minWidth:900,padding:"4px"}}>
-        {col("Sechzehntelfinale",BRACKET_R32.slice(0,8),"#1e3a5f")}
-        {conn(28,"#bfdbfe",4,54)}
-        {col("Achtelfinale",BRACKET_R16.slice(0,4),"#2563eb",27)}
-        {conn(55,"#93c5fd",2,62)}
-        {col("Viertelfinale",BRACKET_QF.slice(0,2),"#7c3aed",82)}
-        {conn(110,"#c4b5fd",1,62)}
-        <div style={{display:"flex",flexDirection:"column",gap:8,minWidth:155,paddingTop:135}}>
-          <div style={{fontSize:"0.65rem",fontWeight:700,color:"#dc2626",background:"#fee2e222",padding:"3px 10px",borderRadius:99,textAlign:"center",border:"1px solid #fca5a5"}}>Halbfinale</div>
-          <BracketMatch match={BRACKET_SF[0]} results={results}/>
-          <div style={{marginTop:12,fontSize:"0.65rem",fontWeight:700,color:"#d97706",background:"#fef9c322",padding:"3px 10px",borderRadius:99,textAlign:"center",border:"1px solid #fde047"}}>🏆 Finale</div>
-          <BracketMatch match={BRACKET_FINAL} results={results} highlight={true}/>
-          <div style={{marginTop:8,fontSize:"0.65rem",fontWeight:700,color:"#64748b",background:"#f1f5f9",padding:"3px 10px",borderRadius:99,textAlign:"center",border:"1px solid #cbd5e1"}}>Platz 3</div>
-          <BracketMatch match={BRACKET_3RD} results={results}/>
-        </div>
-        {conn(110,"#c4b5fd",1,62)}
-        {col("Viertelfinale",BRACKET_QF.slice(2,4),"#7c3aed",82)}
-        {conn(55,"#93c5fd",2,62)}
-        {col("Achtelfinale",BRACKET_R16.slice(4,8),"#2563eb",27)}
-        {conn(28,"#bfdbfe",4,54)}
-        {col("Sechzehntelfinale",BRACKET_R32.slice(8,16),"#1e3a5f")}
-      </div>
-    </div>
-  );
-}
-
-function AdminPanel({results,onSave,onDelete,onClose}) {
-  const [auth,setAuth]=useState(false);
-  const [pin,setPin]=useState("");
-  const [editId,setEditId]=useState(null);
-  const [h,setH]=useState("");
-  const [a,setA]=useState("");
-  const startEdit=(x)=>{const r=results[x.id];setEditId(x.id);setH(r?String(r.home):"");setA(r?String(r.away):"");};
-  const cancel=()=>{setEditId(null);setH("");setA("");};
-  return (
+function AdminPanel({results,onSave,onDelete,onClose}){
+  const[auth,setAuth]=useState(false);
+  const[pin,setPin]=useState("");
+  const[editId,setEditId]=useState(null);
+  const[h,setH]=useState("");
+  const[a,setA]=useState("");
+  function startEdit(x){var r=results[x.id];setEditId(x.id);setH(r?String(r.home):"");setA(r?String(r.away):"");}
+  function cancel(){setEditId(null);setH("");setA("");}
+  return(
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,39,68,0.6)",display:"flex",alignItems:"flex-start",justifyContent:"center",zIndex:1000,padding:"20px 12px",overflowY:"auto"}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:14,padding:"22px",width:"100%",maxWidth:500,boxShadow:"0 20px 60px rgba(30,58,95,0.25)"}}>
+      <div onClick={function(e){e.stopPropagation();}} style={{background:"#fff",borderRadius:14,padding:"22px",width:"100%",maxWidth:500,boxShadow:"0 20px 60px rgba(30,58,95,0.25)"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-          <h3 style={{margin:0,color:"#1e3a5f",fontSize:"1rem"}}>⚙️ Ergebnisse verwalten</h3>
-          <button onClick={onClose} style={{background:"none",border:"none",fontSize:"1.2rem",cursor:"pointer",color:"#64748b"}}>✕</button>
+          <h3 style={{margin:0,color:"#1e3a5f",fontSize:"1rem"}}>Ergebnisse verwalten</h3>
+          <button onClick={onClose} style={{background:"none",border:"none",fontSize:"1.2rem",cursor:"pointer",color:"#64748b"}}>X</button>
         </div>
         {!auth ? (
           <div>
-            <p style={{fontSize:"0.8rem",color:"#64748b",marginBottom:12}}>Admin-PIN eingeben:</p>
-            <input type="password" value={pin} onChange={e=>setPin(e.target.value)}
-              onKeyDown={e=>{if(e.key==="Enter"&&pin==="1234")setAuth(true);}}
+            <p style={{fontSize:"0.8rem",color:"#64748b",marginBottom:12}}>Admin-PIN eingeben (Standard: 1234):</p>
+            <input type="password" value={pin} onChange={function(e){setPin(e.target.value);}}
+              onKeyDown={function(e){if(e.key==="Enter"&&pin==="1234")setAuth(true);}}
               style={{width:"100%",padding:"10px",border:"1px solid #cbd5e1",borderRadius:8,fontSize:"1rem",outline:"none",marginBottom:10}} placeholder="PIN"/>
-            <button onClick={()=>{if(pin==="1234")setAuth(true);else setPin("");}}
+            <button onClick={function(){if(pin==="1234")setAuth(true);else setPin("");}}
               style={{background:"#2563eb",border:"none",color:"#fff",padding:"9px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:"0.88rem",width:"100%"}}>
               Anmelden
             </button>
-            <p style={{fontSize:"0.7rem",color:"#94a3b8",marginTop:8,textAlign:"center"}}>Standard-PIN: 1234</p>
           </div>
         ) : (
           <div style={{maxHeight:"65vh",overflowY:"auto",display:"flex",flexDirection:"column",gap:6}}>
-            {GAMES.map(x=>{
-              const r=results[x.id];
-              const editing=editId===x.id;
-              return (
+            {GAMES.map(function(x){
+              var r=results[x.id];
+              var editing=editId===x.id;
+              return(
                 <div key={x.id} style={{background:r?"#f0f9ff":"#f8fafc",border:r?"1px solid #bfdbfe":"1px solid #e2e8f0",borderRadius:8,padding:"8px 10px"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6}}>
                     <div style={{fontSize:"0.76rem",fontWeight:600,color:"#1e3a5f",flex:1,minWidth:0}}>
@@ -461,27 +345,21 @@ function AdminPanel({results,onSave,onDelete,onClose}) {
                     </div>
                     <div style={{display:"flex",gap:5,alignItems:"center",flexShrink:0}}>
                       {r&&!editing&&<span style={{fontWeight:800,color:"#2563eb",fontSize:"0.9rem"}}>{r.home}:{r.away}</span>}
-                      {!editing&&(
-                        <button onClick={()=>startEdit(x)} style={{background:"#2563eb",border:"none",color:"#fff",padding:"3px 10px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem",fontWeight:700}}>
-                          {r?"Ändern":"Eintragen"}
-                        </button>
-                      )}
-                      {r&&!editing&&(
-                        <button onClick={()=>onDelete(x.id)} style={{background:"#fee2e2",border:"none",color:"#dc2626",padding:"3px 8px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem",fontWeight:700}}>✕</button>
-                      )}
+                      {!editing&&<button onClick={function(){startEdit(x);}} style={{background:"#2563eb",border:"none",color:"#fff",padding:"3px 10px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem",fontWeight:700}}>{r?"Ändern":"Eintragen"}</button>}
+                      {r&&!editing&&<button onClick={function(){onDelete(x.id);}} style={{background:"#fee2e2",border:"none",color:"#dc2626",padding:"3px 8px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem",fontWeight:700}}>X</button>}
                     </div>
                   </div>
                   {editing&&(
                     <div style={{display:"flex",gap:8,alignItems:"center",marginTop:8,flexWrap:"wrap"}}>
                       <span style={{fontSize:"0.75rem",color:"#64748b"}}>{x.home}</span>
-                      <input type="number" min="0" max="20" value={h} onChange={e=>setH(e.target.value)}
+                      <input type="number" min="0" max="20" value={h} onChange={function(e){setH(e.target.value);}}
                         style={{width:46,textAlign:"center",border:"2px solid #3b82f6",borderRadius:6,fontSize:"1.1rem",fontWeight:700,padding:"3px",outline:"none"}}/>
                       <span style={{color:"#94a3b8",fontWeight:700}}>:</span>
-                      <input type="number" min="0" max="20" value={a} onChange={e=>setA(e.target.value)}
+                      <input type="number" min="0" max="20" value={a} onChange={function(e){setA(e.target.value);}}
                         style={{width:46,textAlign:"center",border:"2px solid #3b82f6",borderRadius:6,fontSize:"1.1rem",fontWeight:700,padding:"3px",outline:"none"}}/>
                       <span style={{fontSize:"0.75rem",color:"#64748b"}}>{x.away}</span>
-                      <button onClick={()=>{if(h!==""&&a!==""){onSave(x.id,h,a);cancel();}}}
-                        style={{background:"#16a34a",border:"none",color:"#fff",padding:"4px 12px",borderRadius:6,cursor:"pointer",fontWeight:700,fontSize:"0.75rem"}}>✓ OK</button>
+                      <button onClick={function(){if(h!==""&&a!==""){onSave(x.id,h,a);cancel();}}}
+                        style={{background:"#16a34a",border:"none",color:"#fff",padding:"4px 12px",borderRadius:6,cursor:"pointer",fontWeight:700,fontSize:"0.75rem"}}>OK</button>
                       <button onClick={cancel}
                         style={{background:"#f1f5f9",border:"none",color:"#64748b",padding:"4px 10px",borderRadius:6,cursor:"pointer",fontSize:"0.75rem"}}>Abbrechen</button>
                     </div>
@@ -496,53 +374,50 @@ function AdminPanel({results,onSave,onDelete,onClose}) {
   );
 }
 
-export default function App() {
-  const [tab,setTab]         = useState("Spielplan");
-  const [grpFilter,setGrpFilter] = useState("Alle");
-  const [results,setResults] = useState(()=>ls.get("wm26_res")||ls.get("wm2026_results")||{});
-  const [allTips,setAllTips] = useState(()=>ls.get("wm26_tips")||ls.get("wm2026_tips")||{});
-  const [users,setUsers]     = useState(()=>ls.get("wm26_users")||ls.get("wm2026_users")||[]);
-  const [me,setMe]           = useState(()=>ls.get("wm26_me")||ls.get("wm2026_me")||null);
-  const [modal,setModal]     = useState(null);
-  const [adminOpen,setAdminOpen] = useState(false);
+function App(){
+  const[tab,setTab]=useState("Spielplan");
+  const[grpFilter,setGrpFilter]=useState("Alle");
+  const[results,setResults]=useState(function(){return ls.get("wm26_res")||{};});
+  const[allTips,setAllTips]=useState(function(){return ls.get("wm26_tips")||{};});
+  const[users,setUsers]=useState(function(){return ls.get("wm26_users")||[];});
+  const[me,setMe]=useState(function(){return ls.get("wm26_me")||null;});
+  const[modal,setModal]=useState(null);
+  const[adminOpen,setAdminOpen]=useState(false);
 
-  const saveResults = r => { setResults(r); ls.set("wm26_res",r); };
+  function saveResults(r){setResults(r);ls.set("wm26_res",r);}
+  function handleSaveResult(gameId,h,a){saveResults(Object.assign({},results,{[gameId]:{home:parseInt(h),away:parseInt(a)}}));}
+  function handleDeleteResult(gameId){var nr=Object.assign({},results);delete nr[gameId];saveResults(nr);}
+  function register(name,email){
+    var id=name.replace(/\s+/g,"_")+"_"+Date.now();
+    var u={id:id,name:name,email:email};
+    var nu=users.filter(function(x){return x.email!==email;}).concat([u]);
+    setUsers(nu);setMe(u);ls.set("wm26_users",nu);ls.set("wm26_me",u);
+  }
+  function saveTip(game,tip){
+    var uid=me.id;
+    var ut=Object.assign({},allTips[uid]||{},{[game.id]:tip});
+    var nt=Object.assign({},allTips,{[uid]:ut});
+    setAllTips(nt);ls.set("wm26_tips",nt);setModal(null);
+  }
+  function logout(){setMe(null);ls.set("wm26_me",null);}
 
-  const handleSaveResult = (gameId,h,a) => {
-    saveResults({...results,[gameId]:{home:parseInt(h),away:parseInt(a)}});
-  };
-  const handleDeleteResult = gameId => {
-    const nr={...results}; delete nr[gameId]; saveResults(nr);
-  };
-  const register = (name,email) => {
-    const id=name.replace(/\s+/g,"_")+"_"+Date.now();
-    const u={id,name,email};
-    const nu=[...users.filter(x=>x.email!==email),u];
-    setUsers(nu); setMe(u); ls.set("wm26_users",nu); ls.set("wm26_me",u);
-  };
-  const saveTip = (game,tip) => {
-    const uid=me.id;
-    const nt={...allTips,[uid]:{...(allTips[uid]||{}),[game.id]:tip}};
-    setAllTips(nt); ls.set("wm26_tips",nt); setModal(null);
-  };
-  const logout = () => { setMe(null); ls.set("wm26_me",null); };
+  var myTips=me?(allTips[me.id]||{}):{};
+  var displayGames=grpFilter==="Alle"?GAMES:GAMES.filter(function(x){return x.g===grpFilter;});
 
-  const myTips = me ? (allTips[me.id]||{}) : {};
-  const displayGames = grpFilter==="Alle" ? GAMES : GAMES.filter(x=>x.g===grpFilter);
-  const tabS = t => ({background:"none",border:"none",borderBottom:tab===t?"3px solid #2563eb":"3px solid transparent",color:tab===t?"#2563eb":"#64748b",padding:"11px 0",flex:1,cursor:"pointer",fontWeight:tab===t?700:400,fontSize:"0.82rem"});
+  function tabStyle(t){return{background:"none",border:"none",borderBottom:tab===t?"3px solid #2563eb":"3px solid transparent",color:tab===t?"#2563eb":"#64748b",padding:"11px 0",flex:1,cursor:"pointer",fontWeight:tab===t?700:400,fontSize:"0.82rem"};}
 
-  return (
+  return(
     <div style={{minHeight:"100vh",background:"#f1f5f9",color:"#1e3a5f"}}>
       <div style={{background:"linear-gradient(135deg,#1e3a5f,#2563eb)",padding:"14px 14px 10px",boxShadow:"0 2px 10px rgba(30,58,95,0.2)"}}>
         <div style={{maxWidth:680,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
           <div>
-            <h1 style={{margin:0,fontSize:"1.3rem",fontWeight:800,color:"#fff"}}>⚽ WM 2026</h1>
-            <p style={{margin:"2px 0 0",fontSize:"0.68rem",color:"#bfdbfe"}}>11. Juni – 19. Juli · Alle Zeiten MESZ</p>
+            <h1 style={{margin:0,fontSize:"1.3rem",fontWeight:800,color:"#fff"}}>WM 2026</h1>
+            <p style={{margin:"2px 0 0",fontSize:"0.68rem",color:"#bfdbfe"}}>11. Juni - 19. Juli · Alle Zeiten MESZ</p>
           </div>
           <div style={{textAlign:"right",flexShrink:0}}>
-            {me&&<div style={{fontSize:"0.7rem",color:"#fff",background:"rgba(255,255,255,0.15)",borderRadius:7,padding:"3px 8px",marginBottom:4}}>👤 {me.name}</div>}
+            {me&&<div style={{fontSize:"0.7rem",color:"#fff",background:"rgba(255,255,255,0.15)",borderRadius:7,padding:"3px 8px",marginBottom:4}}>{me.name}</div>}
             <div style={{display:"flex",gap:5,justifyContent:"flex-end"}}>
-              <button onClick={()=>setAdminOpen(true)} style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#bfdbfe",padding:"4px 10px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem"}}>⚙️ Admin</button>
+              <button onClick={function(){setAdminOpen(true);}} style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#bfdbfe",padding:"4px 10px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem"}}>Admin</button>
               {me&&<button onClick={logout} style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#bfdbfe",padding:"4px 10px",borderRadius:6,cursor:"pointer",fontSize:"0.7rem"}}>Abmelden</button>}
             </div>
           </div>
@@ -551,51 +426,42 @@ export default function App() {
 
       <div style={{background:"#fff",borderBottom:"1px solid #e2e8f0",position:"sticky",top:0,zIndex:100}}>
         <div style={{maxWidth:680,margin:"0 auto",display:"flex"}}>
-          {["Spielplan","Gruppen","Turnierbaum","Kicktipp"].map(t=><button key={t} style={tabS(t)} onClick={()=>setTab(t)}>{t}</button>)}
+          {["Spielplan","Gruppen","Kicktipp"].map(function(t){return <button key={t} style={tabStyle(t)} onClick={function(){setTab(t);}}>{t}</button>;})}
         </div>
       </div>
 
       <div style={{maxWidth:680,margin:"0 auto",padding:"12px 10px 40px"}}>
         {tab==="Spielplan"&&(
-          <>
+          <div>
             <div style={{overflowX:"auto",marginBottom:10,paddingBottom:2}}>
               <div style={{display:"flex",gap:4,minWidth:"max-content"}}>
-                {["Alle",...GROUPS].map(g=>(
-                  <button key={g} onClick={()=>setGrpFilter(g)} style={{background:grpFilter===g?"#2563eb":"#fff",border:"1px solid",borderColor:grpFilter===g?"#2563eb":"#e2e8f0",color:grpFilter===g?"#fff":"#64748b",padding:"4px 10px",borderRadius:99,cursor:"pointer",fontSize:"0.7rem",fontWeight:grpFilter===g?700:400,whiteSpace:"nowrap"}}>
+                {["Alle"].concat(GROUPS).map(function(g){return(
+                  <button key={g} onClick={function(){setGrpFilter(g);}} style={{background:grpFilter===g?"#2563eb":"#fff",border:"1px solid",borderColor:grpFilter===g?"#2563eb":"#e2e8f0",color:grpFilter===g?"#fff":"#64748b",padding:"4px 10px",borderRadius:99,cursor:"pointer",fontSize:"0.7rem",fontWeight:grpFilter===g?700:400,whiteSpace:"nowrap"}}>
                     {g==="Alle"?"Alle":"Gr. "+g}
                   </button>
-                ))}
+                );})}
               </div>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:7}}>
-              {displayGames.map(game=>(
-                <GameCard key={game.id} game={game} myTip={myTips[game.id]} results={results} onTip={()=>setModal(game)} currentUser={me}/>
-              ))}
+              {displayGames.map(function(game){return(
+                <GameCard key={game.id} game={game} myTip={myTips[game.id]} results={results} onTip={function(){setModal(game);}} currentUser={me}/>
+              );})}
             </div>
-          </>
+          </div>
         )}
 
         {tab==="Gruppen"&&(
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            {GROUPS.map(g=><GroupTable key={g} grp={g} results={results}/>)}
-          </div>
-        )}
-
-        {tab==="Turnierbaum"&&(
-          <div>
-            <div style={{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:8,padding:"8px 12px",fontSize:"0.75rem",color:"#92400e",marginBottom:12}}>
-              ← Horizontal scrollen · Ergebnisse über ⚙️ Admin eintragen
-            </div>
-            <TournamentBracket results={results}/>
+            {GROUPS.map(function(g){return <GroupTable key={g} grp={g} results={results}/>;} )}
           </div>
         )}
 
         {tab==="Kicktipp"&&(
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             {!me&&<Register onRegister={register}/>}
-            {me&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:10,padding:"10px 14px",fontSize:"0.8rem",color:"#1d4ed8"}}>✅ Du nimmst als <strong>{me.name}</strong> teil.</div>}
+            {me&&<div style={{background:"#eff6ff",border:"1px solid #bfdbfe",borderRadius:10,padding:"10px 14px",fontSize:"0.8rem",color:"#1d4ed8"}}>Du nimmst als <strong>{me.name}</strong> teil. Tipps im Spielplan-Tab abgeben!</div>}
             <div>
-              <h3 style={{margin:"0 0 8px",fontSize:"0.92rem",fontWeight:700}}>🏆 Gesamtwertung</h3>
+              <h3 style={{margin:"0 0 8px",fontSize:"0.92rem",fontWeight:700}}>Gesamtwertung</h3>
               <div style={{background:"#fff7ed",border:"1px solid #fed7aa",borderRadius:8,padding:"7px 12px",fontSize:"0.72rem",color:"#92400e",marginBottom:8}}>
                 <strong>Punkte:</strong> Exaktes Ergebnis = 5 · Gleiche Tordifferenz = 3 · Richtige Tendenz = 2
               </div>
@@ -605,13 +471,13 @@ export default function App() {
               <div>
                 <h3 style={{margin:"0 0 8px",fontSize:"0.92rem",fontWeight:700}}>Deine Tipps</h3>
                 <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                  {GAMES.filter(x=>myTips[x.id]||results[x.id]).map(x=>{
-                    const r=results[x.id],t=myTips[x.id],pts=calcPoints(t,r);
-                    const pc=pts>=5?"#166534":pts>=3?"#854d0e":pts>=2?"#9a3412":"#64748b";
-                    const pb=pts>=5?"#dcfce7":pts>=3?"#fef9c3":pts>=2?"#fff7ed":"#f1f5f9";
-                    return (
+                  {GAMES.filter(function(x){return myTips[x.id]||results[x.id];}).map(function(x){
+                    var r=results[x.id],t=myTips[x.id],pts=calcPoints(t,r);
+                    var pc=pts>=5?"#166534":pts>=3?"#854d0e":pts>=2?"#9a3412":"#64748b";
+                    var pb=pts>=5?"#dcfce7":pts>=3?"#fef9c3":pts>=2?"#fff7ed":"#f1f5f9";
+                    return(
                       <div key={x.id} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:8,padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6}}>
-                        <div style={{fontSize:"0.76rem",fontWeight:600}}>{FLAGS[x.home]||"🏳️"} {x.home} vs {x.away} {FLAGS[x.away]||"🏳️"}</div>
+                        <div style={{fontSize:"0.76rem",fontWeight:600}}>{x.home} vs {x.away}</div>
                         <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap"}}>
                           {r&&<span style={{fontSize:"0.72rem",color:"#64748b"}}>Ergebnis: <strong>{r.home}:{r.away}</strong></span>}
                           {t&&<span style={{fontSize:"0.72rem",color:"#2563eb"}}>Tipp: <strong>{t.home}:{t.away}</strong></span>}
@@ -627,8 +493,13 @@ export default function App() {
         )}
       </div>
 
-      {modal&&me&&<TipModal game={modal} onClose={()=>setModal(null)} onSave={t=>saveTip(modal,t)} existing={myTips[modal.id]}/>}
-      {adminOpen&&<AdminPanel results={results} onSave={handleSaveResult} onDelete={handleDeleteResult} onClose={()=>setAdminOpen(false)}/>}
+      {modal&&me&&<TipModal game={modal} onClose={function(){setModal(null);}} onSave={function(t){saveTip(modal,t);}} existing={myTips[modal.id]}/>}
+      {adminOpen&&<AdminPanel results={results} onSave={handleSaveResult} onDelete={handleDeleteResult} onClose={function(){setAdminOpen(false);}}/>}
     </div>
   );
 }
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
